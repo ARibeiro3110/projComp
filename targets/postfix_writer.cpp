@@ -275,3 +275,13 @@ void til::postfix_writer::do_if_else_node(til::if_else_node * const node, int lv
   node->elseblock()->accept(this, lvl + 2);
   _pf.LABEL(mklbl(lbl1 = lbl2));
 }
+
+//---------------------------------------------------------------------------
+
+void til::postfix_writer::do_next_node(til::next_node * const node, int lvl) {
+  // EMPTY
+}
+
+void til::postfix_writer::do_stop_node(til::stop_node * const node, int lvl) {
+  // EMPTY
+}
