@@ -203,6 +203,12 @@ void til::type_checker::do_declaration_node(til::declaration_node *const node, i
 
 //---------------------------------------------------------------------------
 
+void til::type_checker::do_function_call_node(til::function_call_node *const node, int lvl) {
+  // EMPTY
+}
+
+//---------------------------------------------------------------------------
+
 void til::type_checker::do_next_node(til::next_node *const node, int lvl) {
   // EMPTY
 }
