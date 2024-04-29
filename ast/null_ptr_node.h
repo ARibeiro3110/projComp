@@ -12,7 +12,7 @@ namespace til {
 
     public:
         null_ptr_node(int lineno, cdk::expression_node *expression) :
-            cdk::expression_node(lineno), {
+            cdk::expression_node(lineno) {
         }
 
         void accept(basic_ast_visitor *sp, int level) {

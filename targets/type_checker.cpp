@@ -231,6 +231,12 @@ void til::type_checker::do_sizeof_node(til::sizeof_node *const node, int lvl) {
 
 //---------------------------------------------------------------------------
 
+void til::type_checker::do_objects_node(til::objects_node *const node, int lvl) {
+  // EMPTY
+}
+
+//---------------------------------------------------------------------------
+
 void til::type_checker::do_null_ptr_node(til::null_ptr_node *const node, int lvl) {
   // EMPTY
 }
