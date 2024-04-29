@@ -16,7 +16,7 @@ LANGUAGE=til
 L_NAME=$(LANGUAGE)_scanner
 Y_NAME=$(LANGUAGE)_parser
 
-LFLAGS   = 
+LFLAGS   =
 YFLAGS   = -dtv --debug
 CXXFLAGS = -std=c++20 -pedantic -Wall -Wextra -ggdb -I. -I$(CDK_INC_DIR) -Wno-unused-parameter -msse2 -mfpmath=sse
 #CXXFLAGS = -std=c++20 -DYYDEBUG=1 -pedantic -Wall -Wextra -ggdb -I. -I$(CDK_INC_DIR) -Wno-unused-parameter
@@ -60,11 +60,11 @@ $(Y_NAME).tab.h: $(Y_NAME).y
 # this is needed to force byacc to run
 $(L_NAME).o: $(L_NAME).cpp $(Y_NAME).tab.h
 
-.auto/all_nodes.h: 
+.auto/all_nodes.h:
 	mkdir -p .auto
 	$(CDK) ast --decls ast --language $(LANGUAGE) > $@
 
-.auto/visitor_decls.h: 
+.auto/visitor_decls.h:
 	mkdir -p .auto
 	$(CDK) ast --decls target --language $(LANGUAGE) > $@
 

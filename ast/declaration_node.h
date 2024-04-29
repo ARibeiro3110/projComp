@@ -16,7 +16,7 @@ namespace til {
     cdk::expression_node *_initialValue;
 
     public:
-        declaration_node(int lineno, int qualifier, std::shared_ptr<cdk::basic_type> varType, const std::string &identifier, 
+        declaration_node(int lineno, int qualifier, std::shared_ptr<cdk::basic_type> varType, const std::string &identifier,
                         cdk::expression_node *initialValue) :
             cdk::typed_node(lineno), _qualifier(qualifier), _identifier(identifier), _initialValue(initialValue) {
         type(varType);
