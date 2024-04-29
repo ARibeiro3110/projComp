@@ -303,3 +303,9 @@ void til::postfix_writer::do_stop_node(til::stop_node * const node, int lvl) {
 void til::postfix_writer::do_block_node(til::block_node * const node, int lvl) {
   // EMPTY
 }
+
+//---------------------------------------------------------------------------
+
+void til::postfix_writer::do_sizeof_node(til::sizeof_node * const node, int lvl) {
+  // EMPTY
+}
