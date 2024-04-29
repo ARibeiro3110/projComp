@@ -16,7 +16,9 @@ namespace til {
         cdk::basic_node(lineno), _value(value) {
     }
 
-    cdk::expression_node *value() { return _value; }
+    cdk::expression_node *value() {
+      return _value;
+    }
 
     void accept(basic_ast_visitor *sp, int level) {
       sp->do_return_node(this, level);

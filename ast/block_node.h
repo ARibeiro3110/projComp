@@ -17,7 +17,6 @@ namespace til {
         cdk::basic_node(lineno), _declarations(declarations), _instructions(instructions) {
     }
 
-  public:
     cdk::sequence_node *declarations() {
       return _declarations;
     }

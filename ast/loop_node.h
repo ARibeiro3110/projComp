@@ -17,11 +17,17 @@ namespace til {
         basic_node(lineno), _condition(condition), _block(block) {
     }
 
-    cdk::expression_node *condition() { return _condition; }
+    cdk::expression_node *condition() {
+      return _condition;
+    }
 
-    cdk::basic_node *block() { return _block; }
+    cdk::basic_node *block() {
+      return _block;
+    }
 
-    void accept(basic_ast_visitor *sp, int level) { sp->do_loop_node(this, level); }
+    void accept(basic_ast_visitor *sp, int level) {
+      sp->do_loop_node(this, level);
+    }
 
   };
 

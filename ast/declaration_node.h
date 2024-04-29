@@ -15,30 +15,30 @@ namespace til {
     std::string _identifier;
     cdk::expression_node *_initialValue;
 
-    public:
-        declaration_node(int lineno, int qualifier, std::shared_ptr<cdk::basic_type> varType, const std::string &identifier,
-                        cdk::expression_node *initialValue) :
-            cdk::typed_node(lineno), _qualifier(qualifier), _identifier(identifier), _initialValue(initialValue) {
-        type(varType);
-        }
+  public:
+    declaration_node(int lineno, int qualifier, std::shared_ptr<cdk::basic_type> varType, const std::string &identifier,
+                      cdk::expression_node *initialValue) :
+        cdk::typed_node(lineno), _qualifier(qualifier), _identifier(identifier), _initialValue(initialValue) {
+      type(varType);
+    }
 
-        int qualifier() {
-            return _qualifier;
-        }
+    int qualifier() {
+      return _qualifier;
+    }
 
-        const std::string &identifier() const {
-            return _identifier;
-        }
+    const std::string &identifier() const {
+      return _identifier;
+    }
 
-        cdk::expression_node *initialValue() {
-            return _initialValue;
-        }
+    cdk::expression_node *initialValue() {
+      return _initialValue;
+    }
 
-        void accept(basic_ast_visitor *sp, int level) {
-            sp->do_declaration_node(this, level);
-        }
+    void accept(basic_ast_visitor *sp, int level) {
+      sp->do_declaration_node(this, level);
+    }
 
-    };
+  };
 
 } // til
 

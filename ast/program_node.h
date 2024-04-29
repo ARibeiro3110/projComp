@@ -17,9 +17,13 @@ namespace til {
       this->type(cdk::functional_type::create(cdk::primitive_type::create(1, cdk::TYPE_INT)));
     }
 
-    til::block_node *statements() { return _statements; }
+    til::block_node *statements() {
+      return _statements;
+    }
 
-    void accept(basic_ast_visitor *sp, int level) { sp->do_program_node(this, level); }
+    void accept(basic_ast_visitor *sp, int level) {
+      sp->do_program_node(this, level);
+    }
 
   };
 

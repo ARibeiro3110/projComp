@@ -17,11 +17,17 @@ namespace til {
         cdk::basic_node(lineno), _argument(argument), _newline(newline) {
     }
 
-    cdk::sequence_node *argument() { return _argument; }
+    cdk::sequence_node *argument() {
+      return _argument;
+    }
 
-    bool newline() { return _newline; }
+    bool newline() {
+      return _newline;
+    }
 
-    void accept(basic_ast_visitor *sp, int level) { sp->do_print_node(this, level); }
+    void accept(basic_ast_visitor *sp, int level) {
+      sp->do_print_node(this, level);
+    }
 
   };
 

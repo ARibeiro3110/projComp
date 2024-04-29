@@ -16,9 +16,13 @@ namespace til {
         cdk::basic_node(lineno), _argument(argument) {
     }
 
-    cdk::expression_node *argument() { return _argument; }
+    cdk::expression_node *argument() {
+      return _argument;
+    }
 
-    void accept(basic_ast_visitor *sp, int level) { sp->do_evaluation_node(this, level); }
+    void accept(basic_ast_visitor *sp, int level) {
+      sp->do_evaluation_node(this, level);
+    }
 
   };
 

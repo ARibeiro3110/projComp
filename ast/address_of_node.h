@@ -6,7 +6,7 @@
 namespace til {
 
   /**
-   * Class for describing address_of nodes.
+   * Class for describing address of lvalue nodes.
    */
   class address_of_node : public cdk::expression_node {
     cdk::lvalue_node *_lvalue;
@@ -16,9 +16,13 @@ namespace til {
         cdk::expression_node(lineno), _lvalue(lvalue) {
     }
 
-    cdk::lvalue_node *lvalue() { return _lvalue; }
+    cdk::lvalue_node *lvalue() {
+      return _lvalue;
+    }
 
-    void accept(basic_ast_visitor *sp, int level) { sp->do_address_of_node(this, level); }
+    void accept(basic_ast_visitor *sp, int level) {
+      sp->do_address_of_node(this, level);
+    }
 
   };
 

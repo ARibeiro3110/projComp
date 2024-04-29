@@ -6,20 +6,20 @@
 namespace til {
 
   /**
-   * Class for describing null_ptr nodes.
+   * Class for describing null pointer nodes.
    */
   class null_ptr_node: public cdk::expression_node {
 
-    public:
-        null_ptr_node(int lineno, cdk::expression_node *expression) :
-            cdk::expression_node(lineno) {
-        }
+  public:
+    null_ptr_node(int lineno, cdk::expression_node *expression) :
+        cdk::expression_node(lineno) {
+    }
 
-        void accept(basic_ast_visitor *sp, int level) {
-          sp->do_null_ptr_node(this, level);
-        }
+    void accept(basic_ast_visitor *sp, int level) {
+      sp->do_null_ptr_node(this, level);
+    }
 
-      };
+  };
 
 } // til
 

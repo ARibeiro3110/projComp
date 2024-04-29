@@ -7,7 +7,7 @@
 namespace til {
 
   /**
-   * Class for describing ptr index nodes.
+   * Class for describing pointer index nodes.
    */
   class ptr_index_node: public cdk::lvalue_node {
     cdk::expression_node *_base, *_index;
@@ -17,13 +17,12 @@ namespace til {
         cdk::lvalue_node(lineno), _base(base), _index(index) {
     }
 
-  public:
     cdk::expression_node *base() {
-        return _base;
+      return _base;
     }
 
     cdk::expression_node *index() {
-        return _index;
+      return _index;
     }
 
     void accept(basic_ast_visitor *sp, int level) {
