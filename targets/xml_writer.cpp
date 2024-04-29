@@ -219,9 +219,17 @@ void til::xml_writer::do_function_call_node(til::function_call_node * const node
 
 //---------------------------------------------------------------------------
 
+void til::xml_writer::do_function_node(til::function_node * const node, int lvl) {
+  // EMPTY
+}
+
+//---------------------------------------------------------------------------
+
 void til::xml_writer::do_next_node(til::next_node * const node, int lvl) {
   // EMPTY
 }
+
+//---------------------------------------------------------------------------
 
 void til::xml_writer::do_stop_node(til::stop_node * const node, int lvl) {
   // EMPTY

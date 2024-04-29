@@ -45,7 +45,7 @@
 %left '*' '/' '%'
 %nonassoc tUNARY
 
-%type <node> stmt program
+%type <node> stmt //-- program   FIXME uncomment this
 %type <sequence> list
 %type <expression> expr
 %type <lvalue> lval
@@ -55,8 +55,8 @@
 %}
 %%
 
-program : tBEGIN list tEND { compiler->ast(new til::program_node(LINE, $2)); }
-        ;
+//-- program : tBEGIN list tEND { compiler->ast(new til::program_node(LINE, $2)); }  FIXME uncomment this
+//--        ;  FIXME uncomment this
 
 list : stmt      { $$ = new cdk::sequence_node(LINE, $1); }
      | list stmt { $$ = new cdk::sequence_node(LINE, $2, $1); }
