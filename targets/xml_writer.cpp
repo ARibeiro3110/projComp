@@ -241,6 +241,6 @@ void til::xml_writer::do_sizeof_node(til::sizeof_node * const node, int lvl) {
 
 //---------------------------------------------------------------------------
 
-void til::xml_writer::do_objects_node(til::objects_node * const node, int lvl) {
+void til::xml_writer::do_null_ptr_node(til::null_ptr_node * const node, int lvl) {
   // EMPTY
 }
