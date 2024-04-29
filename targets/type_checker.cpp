@@ -228,3 +228,9 @@ void til::type_checker::do_block_node(til::block_node *const node, int lvl) {
 void til::type_checker::do_sizeof_node(til::sizeof_node *const node, int lvl) {
   // EMPTY
 }
+
+//---------------------------------------------------------------------------
+
+void til::type_checker::do_objects_node(til::objects_node *const node, int lvl) {
+  // EMPTY
+}
