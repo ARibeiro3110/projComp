@@ -296,6 +296,12 @@ void til::postfix_writer::do_function_node(til::function_node * const node, int 
 
 //---------------------------------------------------------------------------
 
+void til::postfix_writer::do_return_node(til::return_node * const node, int lvl) {
+  // EMPTY
+}
+
+//---------------------------------------------------------------------------
+
 void til::postfix_writer::do_next_node(til::next_node * const node, int lvl) {
   // EMPTY
 }
