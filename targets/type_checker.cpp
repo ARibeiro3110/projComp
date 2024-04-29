@@ -173,7 +173,7 @@ void til::type_checker::do_print_node(til::print_node *const node, int lvl) {
 
 void til::type_checker::do_read_node(til::read_node *const node, int lvl) {
   try {
-    node->argument()->accept(this, lvl);
+    // node->argument()->accept(this, lvl); // FIXME: commented to compile
   } catch (const std::string &id) {
     throw "undeclared variable '" + id + "'";
   }
@@ -214,5 +214,11 @@ void til::type_checker::do_next_node(til::next_node *const node, int lvl) {
 }
 
 void til::type_checker::do_stop_node(til::stop_node *const node, int lvl) {
+  // EMPTY
+}
+
+//---------------------------------------------------------------------------
+
+void til::type_checker::do_block_node(til::block_node *const node, int lvl) {
   // EMPTY
 }

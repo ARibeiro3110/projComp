@@ -158,7 +158,7 @@ void til::xml_writer::do_print_node(til::print_node * const node, int lvl) {
 void til::xml_writer::do_read_node(til::read_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
   openTag(node, lvl);
-  node->argument()->accept(this, lvl + 2);
+  // node->argument()->accept(this, lvl + 2); // FIXME: commented to compile
   closeTag(node, lvl);
 }
 
@@ -224,5 +224,11 @@ void til::xml_writer::do_next_node(til::next_node * const node, int lvl) {
 }
 
 void til::xml_writer::do_stop_node(til::stop_node * const node, int lvl) {
+  // EMPTY
+}
+
+//---------------------------------------------------------------------------
+
+void til::xml_writer::do_block_node(til::block_node * const node, int lvl) {
   // EMPTY
 }
