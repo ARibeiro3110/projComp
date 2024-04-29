@@ -11,7 +11,7 @@ namespace til {
   class null_ptr_node: public cdk::expression_node {
 
   public:
-    null_ptr_node(int lineno, cdk::expression_node *expression) :
+    null_ptr_node(int lineno) :
         cdk::expression_node(lineno) {
     }
 
