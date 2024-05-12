@@ -7,12 +7,6 @@
 
 //---------------------------------------------------------------------------
 
-void til::type_checker::do_sequence_node(cdk::sequence_node *const node, int lvl) {
-  // EMPTY
-}
-
-//---------------------------------------------------------------------------
-
 void til::type_checker::do_nil_node(cdk::nil_node *const node, int lvl) {
   // EMPTY
 }
@@ -29,6 +23,12 @@ void til::type_checker::do_and_node(cdk::and_node *const node, int lvl) {
   // EMPTY
 }
 void til::type_checker::do_or_node(cdk::or_node *const node, int lvl) {
+  // EMPTY
+}
+
+//---------------------------------------------------------------------------
+
+void til::type_checker::do_sequence_node(cdk::sequence_node *const node, int lvl) {
   // EMPTY
 }
 
@@ -161,6 +161,8 @@ void til::type_checker::do_program_node(til::program_node *const node, int lvl) 
   // EMPTY
 }
 
+//---------------------------------------------------------------------------
+
 void til::type_checker::do_evaluation_node(til::evaluation_node *const node, int lvl) {
   node->argument()->accept(this, lvl + 2);
 }
@@ -224,7 +226,6 @@ void til::type_checker::do_return_node(til::return_node *const node, int lvl) {
 void til::type_checker::do_next_node(til::next_node *const node, int lvl) {
   // EMPTY
 }
-
 
 //---------------------------------------------------------------------------
 

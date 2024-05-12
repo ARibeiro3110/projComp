@@ -262,8 +262,6 @@ void til::postfix_writer::do_if_node(til::if_node * const node, int lvl) {
   _pf.LABEL(mklbl(lbl1));
 }
 
-//---------------------------------------------------------------------------
-
 void til::postfix_writer::do_if_else_node(til::if_else_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
   int lbl1, lbl2;
