@@ -51,6 +51,9 @@ namespace til {
         default: return "[unknown qualifier]";
       };
     }
+    inline const char *bool_to_str(bool boolean) {
+      return boolean ? "true" : "false";
+    }
     template<typename T>
     void process_literal(cdk::literal_node<T> *const node, int lvl) {
       os() << std::string(lvl, ' ') << "<" << node->label() << ">" << node->value() << "</" << node->label() << ">" << std::endl;

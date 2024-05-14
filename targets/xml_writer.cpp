@@ -159,7 +159,7 @@ void til::xml_writer::do_evaluation_node(til::evaluation_node * const node, int 
 void til::xml_writer::do_print_node(til::print_node * const node, int lvl) {
   // TODO: ASSERT_SAFE_EXPRESSIONS;
   os() << std::string(lvl, ' ') << "<" << node->label()
-       << " newline='" << node->newline() << "'>" << std::endl;
+       << " newline='" << bool_to_str(node->newline()) << "'>" << std::endl;
   node->argument()->accept(this, lvl + 2);
   closeTag(node, lvl);
 }
