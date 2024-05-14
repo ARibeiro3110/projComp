@@ -45,8 +45,8 @@
 %token tLE tGE tEQ tNE tAND tOR tSET
 %token tPROGRAM
 
-%type <node> file_decl decl program func_decl instr
-%type <sequence> file_decls decls func_decls instrs exprs
+%type <node> file_decl decl program func_arg instr
+%type <sequence> file_decls decls func_args instrs exprs
 %type <expression> func_def expr
 %type <lvalue> lval
 %type <block> decls_instrs block
@@ -95,16 +95,16 @@ decls_instrs : decls instrs { $$ = new til::block_node(LINE, $1,                
              | /* empty */  { $$ = new til::block_node(LINE, new cdk::sequence_node(LINE), new cdk::sequence_node(LINE)); }
              ;
 
-func_def : '(' tFUNCTION '(' func_return_type func_decls ')' decls_instrs ')' { $$ = new til::function_node(LINE, $5,                           $4, $7); }
-         | '(' tFUNCTION '(' func_return_type            ')' decls_instrs ')' { $$ = new til::function_node(LINE, new cdk::sequence_node(LINE), $4, $6); }
+func_def : '(' tFUNCTION '(' func_return_type func_args ')' decls_instrs ')' { $$ = new til::function_node(LINE, $5,                           $4, $7); }
+         | '(' tFUNCTION '(' func_return_type           ')' decls_instrs ')' { $$ = new til::function_node(LINE, new cdk::sequence_node(LINE), $4, $6); }
          ;
 
-func_decls : func_decls func_decl { $$ = new cdk::sequence_node(LINE, $2, $1); }
-           |            func_decl { $$ = new cdk::sequence_node(LINE, $1); }
-           ;
-
-func_decl : '(' type tIDENTIFIER ')' { $$ = new til::declaration_node(LINE, tPRIVATE, $2, *$3, nullptr); delete $3; }
+func_args : func_args func_arg { $$ = new cdk::sequence_node(LINE, $2, $1); }
+          |           func_arg { $$ = new cdk::sequence_node(LINE, $1); }
           ;
+
+func_arg : '(' type tIDENTIFIER ')' { $$ = new til::declaration_node(LINE, tPRIVATE, $2, *$3, nullptr); delete $3; }
+         ;
 
 types : types type { $$ = $1; $$->push_back($2); }
       |       type { $$ = new std::vector<std::shared_ptr<cdk::basic_type>>(1, $1); }

@@ -3,6 +3,9 @@
 
 #include "targets/basic_ast_visitor.h"
 #include <cdk/ast/basic_node.h>
+#include <cdk/types/types.h>
+
+#include "til_parser.tab.h"
 
 namespace til {
 
@@ -39,6 +42,15 @@ namespace til {
   protected:
     void do_binary_operation(cdk::binary_operation_node *const node, int lvl);
     void do_unary_operation(cdk::unary_operation_node *const node, int lvl);
+    inline const char *qualifier_to_str(int qualifier) {
+      switch (qualifier) {
+        case tEXTERNAL: return "external";
+        case tFORWARD: return "forward";
+        case tPUBLIC: return "public";
+        case tPRIVATE: return "private";
+        default: return "[unknown qualifier]";
+      };
+    }
     template<typename T>
     void process_literal(cdk::literal_node<T> *const node, int lvl) {
       os() << std::string(lvl, ' ') << "<" << node->label() << ">" << node->value() << "</" << node->label() << ">" << std::endl;
