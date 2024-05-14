@@ -148,6 +148,7 @@ instr : expr                           { $$ = new til::evaluation_node(LINE, $1)
       | '(' tNEXT    tINTEGER ')'      { $$ = new til::next_node(LINE, $3); }
       | '(' tNEXT             ')'      { $$ = new til::next_node(LINE, 1); }
       | '(' tRETURN  expr     ')'      { $$ = new til::return_node(LINE, $3); }
+      | '(' tRETURN           ')'      { $$ = new til::return_node(LINE, nullptr); }
       | '(' tIF   expr instr instr ')' { $$ = new til::if_else_node(LINE, $3, $4, $5); }
       | '(' tIF   expr instr       ')' { $$ = new til::if_node(LINE, $3, $4); }
       | '(' tLOOP expr instr       ')' { $$ = new til::loop_node(LINE, $3, $4); }
