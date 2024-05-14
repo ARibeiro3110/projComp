@@ -11,7 +11,7 @@
 // don't change this
 #define yyerror LexerError
 
-#define CHECKED_STOI(base) { \
+#define SAFE_STOI(base) { \
   try { \
     yylval.i = std::stoi(yytext, nullptr, base); \
     return tINTEGER; \
@@ -20,7 +20,7 @@
   } \
 }
 
-#define CHECKED_STOD { \
+#define SAFE_STOD { \
   try { \
     yylval.d = std::stod(yytext); \
     return tDOUBLE; \
@@ -45,8 +45,8 @@ EXP [Ee][+-]?[0-9]+
 <X_COMMENT>"/*"        yy_push_state(X_COMMENT);
 <X_COMMENT>.|\n        ; /* ignore */
 
-">="                   return tGE;
 "<="                   return tLE;
+">="                   return tGE;
 "=="                   return tEQ;
 "!="                   return tNE;
 "&&"                   return tAND;
@@ -57,7 +57,7 @@ EXP [Ee][+-]?[0-9]+
 "string"               return tTYPE_STRING;
 "void"                 return tTYPE_VOID;
 
-"extern"               return tEXTERN;
+"external"             return tEXTERNAL;
 "forward"              return tFORWARD;
 "public"               return tPUBLIC;
 "var"                  return tVAR;
@@ -108,14 +108,17 @@ EXP [Ee][+-]?[0-9]+
 <X_STRING_IGN>\0       yyerror("null byte in string");
 <X_STRING_IGN>.        ;
 
-0|[1-9][0-9]*          CHECKED_STOI(10)
-0x[0-9a-fA-F]+         CHECKED_STOI(16);
+0|[1-9][0-9]*          SAFE_STOI(10)
+0[0-9]+                yyerror("invalid base 10 integer literal");
+0x0*                   yyerror("invalid base 16 integer literal");
+0x[0-9a-fA-F]+         SAFE_STOI(16);
+0x[0-9a-zA-Z]+         yyerror("invalid base 16 integer literal");
 
-[0-9]*\.[0-9]+{EXP}?   CHECKED_STOD;
-[0-9]+\.[0-9]*{EXP}?   CHECKED_STOD;
-[0-9]+{EXP}            CHECKED_STOD;
+[0-9]*\.[0-9]+{EXP}?   SAFE_STOD;
+[0-9]+\.[0-9]*{EXP}?   SAFE_STOD;
+[0-9]+{EXP}            SAFE_STOD;
 
-[-()<>+*/%\[\]@?~]       return *yytext;
+[-()<>+*/%@?~!]       return *yytext;
 
 [ \t\n\r]+               ; /* ignore whitespace */
 
