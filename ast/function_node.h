@@ -21,7 +21,7 @@ namespace til {
         for (size_t i = 0; i < arguments->size(); i++) {
           argTypes.push_back(dynamic_cast<cdk::typed_node*>(arguments->node(i))->type());
         }
-        
+
         this->type(cdk::functional_type::create(argTypes, returnType));
       }
 
@@ -36,7 +36,7 @@ namespace til {
       void accept(basic_ast_visitor *sp, int level) {
         sp->do_function_node(this, level);
       }
-      
+
   };
 
 } // til

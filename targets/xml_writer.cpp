@@ -237,7 +237,7 @@ void til::xml_writer::do_declaration_node(til::declaration_node * const node, in
 void til::xml_writer::do_function_call_node(til::function_call_node * const node, int lvl) {
   // TODO: ASSERT_SAFE_EXPRESSIONS
   os() << std::string(lvl, ' ') << "<" << node->label();
-  
+
   if (node->identifier() != nullptr) {
     os() << ">" << std::endl;
     openTag("identifier", lvl + 2);
@@ -245,7 +245,7 @@ void til::xml_writer::do_function_call_node(til::function_call_node * const node
     closeTag("identifier", lvl + 2);
   } else
     os() << std::string(lvl + 2, ' ') << " identifier='@'>" << std::endl; // TODO
-  
+
   openTag("arguments", lvl + 2);
   node->arguments()->accept(this, lvl + 4);
   closeTag("arguments", lvl + 2);
