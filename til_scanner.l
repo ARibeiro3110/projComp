@@ -118,9 +118,9 @@ EXP [Ee][+-]?[0-9]+
 [0-9]+\.[0-9]*{EXP}?   SAFE_STOD;
 [0-9]+{EXP}            SAFE_STOD;
 
-[-()<>+*/%@?~!]       return *yytext;
+[-()<>+*/%@?~!]        return *yytext;
 
-[ \t\n\r]+               ; /* ignore whitespace */
+[ \t\n\r]+             ; /* ignore whitespace */
 
 .                      yyerror("Unknown character");
 
