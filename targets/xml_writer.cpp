@@ -16,9 +16,6 @@ void til::xml_writer::do_data_node(cdk::data_node * const node, int lvl) {
        << " size='" << node->size() << "'>"
        << "</" << node->label() << ">" << std::endl;
 }
-void til::xml_writer::do_double_node(cdk::double_node * const node, int lvl) {
-  process_literal(node, lvl);
-}
 void til::xml_writer::do_not_node(cdk::not_node * const node, int lvl) {
   do_unary_operation(node, lvl);
 }
@@ -43,6 +40,10 @@ void til::xml_writer::do_sequence_node(cdk::sequence_node * const node, int lvl)
 //---------------------------------------------------------------------------
 
 void til::xml_writer::do_integer_node(cdk::integer_node * const node, int lvl) {
+  process_literal(node, lvl);
+}
+
+void til::xml_writer::do_double_node(cdk::double_node * const node, int lvl) {
   process_literal(node, lvl);
 }
 

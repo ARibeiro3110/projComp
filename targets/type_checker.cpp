@@ -13,9 +13,6 @@ void til::type_checker::do_nil_node(cdk::nil_node *const node, int lvl) {
 void til::type_checker::do_data_node(cdk::data_node *const node, int lvl) {
   // EMPTY
 }
-void til::type_checker::do_double_node(cdk::double_node *const node, int lvl) {
-  // EMPTY
-}
 void til::type_checker::do_not_node(cdk::not_node *const node, int lvl) {
   processUnaryExpression(node, lvl, false);
 }
@@ -29,7 +26,9 @@ void til::type_checker::do_or_node(cdk::or_node *const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_sequence_node(cdk::sequence_node *const node, int lvl) {
-  // EMPTY
+  for (size_t i = 0; i < node->size(); i++) {
+    node->node(i)->accept(this, lvl);
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -37,6 +36,11 @@ void til::type_checker::do_sequence_node(cdk::sequence_node *const node, int lvl
 void til::type_checker::do_integer_node(cdk::integer_node *const node, int lvl) {
   ASSERT_UNSPEC;
   node->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+}
+
+void til::type_checker::do_double_node(cdk::double_node *const node, int lvl) {
+  ASSERT_UNSPEC;
+  node->type(cdk::primitive_type::create(8, cdk::TYPE_DOUBLE));
 }
 
 void til::type_checker::do_string_node(cdk::string_node *const node, int lvl) {
