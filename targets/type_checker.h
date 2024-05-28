@@ -24,8 +24,10 @@ namespace til {
     }
 
   protected:
-    void processUnaryExpression(cdk::unary_operation_node *const node, int lvl, bool acceptDoubles);
-    void processBinaryExpression(cdk::binary_operation_node *const node, int lvl);
+    bool typecmp(std::shared_ptr<cdk::basic_type> left, std::shared_ptr<cdk::basic_type> right, bool covariant);
+    void processUnaryExpression(cdk::unary_operation_node *const node, int lvl, bool allowDoubles);
+    void processBinaryArithmeticExpression(cdk::binary_operation_node *const node, int lvl, bool allowDoubles, bool allowOnePointer, bool allowTwoPointers);
+    void processBinaryBooleanExpression(cdk::binary_operation_node *const node, int lvl, bool allowDoubles, bool allowPointers);
     template<typename T>
     void process_literal(cdk::literal_node<T> *const node, int lvl) {
     }
