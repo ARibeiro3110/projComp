@@ -193,7 +193,7 @@ void til::type_checker::processBinaryBooleanExpression(cdk::binary_operation_nod
       throw std::string("wrong type in right argument of binary expression");
     }
   }
-  
+
   else if (allowDoubles && node->left()->is_typed(cdk::TYPE_DOUBLE)) {
     if (node->right()->is_typed(cdk::TYPE_UNSPEC)) {
       node->right()->type(node->left()->type());
@@ -203,7 +203,7 @@ void til::type_checker::processBinaryBooleanExpression(cdk::binary_operation_nod
       throw std::string("wrong type in right argument of binary expression");
     }
   }
-  
+
   else if (allowPointers && node->left()->is_typed(cdk::TYPE_POINTER)) {
     if (node->right()->is_typed(cdk::TYPE_UNSPEC)) {
       node->right()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
@@ -213,7 +213,7 @@ void til::type_checker::processBinaryBooleanExpression(cdk::binary_operation_nod
       throw std::string("wrong type in right argument of binary expression");
     }
   }
-  
+
   else if (node->left()->is_typed(cdk::TYPE_UNSPEC)) {
     if (node->right()->is_typed(cdk::TYPE_UNSPEC)) {
       node->left()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
@@ -230,7 +230,7 @@ void til::type_checker::processBinaryBooleanExpression(cdk::binary_operation_nod
       throw std::string("wrong type in right argument of binary expression");
     }
   }
-  
+
   else {
     throw std::string("wrong type in left argument of binary expression");
   }
