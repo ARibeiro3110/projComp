@@ -13,7 +13,11 @@ void til::postfix_writer::do_data_node(cdk::data_node * const node, int lvl) {
   // EMPTY
 }
 void til::postfix_writer::do_not_node(cdk::not_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
+
+  node->argument()->accept(this, lvl);
+  _pf.INT(0);
+  _pf.EQ();
 }
 void til::postfix_writer::do_and_node(cdk::and_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
@@ -77,8 +81,13 @@ void til::postfix_writer::do_string_node(cdk::string_node * const node, int lvl)
 
 void til::postfix_writer::do_unary_minus_node(cdk::unary_minus_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
+
   node->argument()->accept(this, lvl); // determine the value
-  _pf.NEG(); // 2-complement
+
+  if (node->is_typed(cdk::TYPE_DOUBLE))
+    _pf.DNEG();
+  else
+    _pf.NEG();
 }
 
 void til::postfix_writer::do_unary_plus_node(cdk::unary_plus_node * const node, int lvl) {
