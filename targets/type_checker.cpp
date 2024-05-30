@@ -340,7 +340,11 @@ void til::type_checker::do_assignment_node(cdk::assignment_node *const node, int
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_program_node(til::program_node *const node, int lvl) {
-  // EMPTY
+  auto symbol = std::make_shared<til::symbol>(node->type(), "@", 0);
+  
+  if (!_symtab.insert(symbol->name(), symbol)) {
+    _symtab.replace(symbol->name(), symbol);
+  }
 }
 
 //---------------------------------------------------------------------------

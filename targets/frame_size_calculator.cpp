@@ -104,7 +104,7 @@ void til::frame_size_calculator::do_assignment_node(cdk::assignment_node * const
 //---------------------------------------------------------------------------
 
 void til::frame_size_calculator::do_program_node(til::program_node * const node, int lvl) {
-  node->statements()->accept(this, lvl + 2);
+  // EMPTY
 }
 
 //---------------------------------------------------------------------------

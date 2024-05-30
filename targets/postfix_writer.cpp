@@ -2,6 +2,7 @@
 #include <sstream>
 #include "targets/type_checker.h"
 #include "targets/postfix_writer.h"
+#include "targets/frame_size_calculator.h"
 #include ".auto/all_nodes.h"  // all_nodes.h is automatically generated
 
 //---------------------------------------------------------------------------
@@ -199,31 +200,47 @@ void til::postfix_writer::do_assignment_node(cdk::assignment_node * const node, 
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_program_node(til::program_node * const node, int lvl) {
-  // Note that Simple doesn't have functions. Thus, it doesn't need
-  // a function node. However, it must start in the main function.
-  // The ProgramNode (representing the whole program) doubles as a
-  // main function node.
+  ASSERT_SAFE_EXPRESSIONS;
+
+  _functionLabels.push("_main");
 
   // generate the main function (RTS mandates that its name be "_main")
   _pf.TEXT();
   _pf.ALIGN();
   _pf.GLOBAL("_main", _pf.FUNC());
   _pf.LABEL("_main");
-  _pf.ENTER(0);  // Simple doesn't implement local variables
+
+  int oldOffset = _offset;
+  _offset = 8;  // space for frame pointer and return address
+  _symtab.push(); // enter a new scope
+
+  frame_size_calculator lsc(_compiler, _symtab);
+  node->statements()->accept(&lsc, lvl);
+  _pf.ENTER(lsc.localsize());
+
+  std::string _oldFunctionReturnLabel = _functionReturnLabel;
+  _functionReturnLabel = mklbl(++_lbl);
+
+  _offset = 0;
 
   node->statements()->accept(this, lvl);
 
   // end the main function
   _pf.INT(0);
   _pf.STFVAL32();
+  _pf.ALIGN();
+  _pf.LABEL(_functionReturnLabel);
   _pf.LEAVE();
   _pf.RET();
 
-  // these are just a few library function imports
-  _pf.EXTERN("readi");
-  _pf.EXTERN("printi");
-  _pf.EXTERN("prints");
-  _pf.EXTERN("println");
+  _functionReturnLabel = _oldFunctionReturnLabel;
+  _offset = oldOffset;
+  _symtab.pop();
+  _functionLabels.pop();
+
+  for (std::string s : _externalFunctions) {
+    _pf.EXTERN(s);
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -250,25 +267,31 @@ void til::postfix_writer::do_print_node(til::print_node * const node, int lvl) {
     expr->accept(this, lvl);
     
     if (expr->is_typed(cdk::TYPE_INT)) {
+      _externalFunctions.insert("printi");
       _pf.CALL("printi");
       _pf.TRASH(4); // delete the printed value
     } else if (expr->is_typed(cdk::TYPE_DOUBLE)) {
+      _externalFunctions.insert("printd");
       _pf.CALL("printd");
       _pf.TRASH(8); // delete the printed value
     } else if (expr->is_typed(cdk::TYPE_STRING)) {
+      _externalFunctions.insert("prints");
       _pf.CALL("prints");
       _pf.TRASH(4); // delete the printed value's address
     }
   }
   
-  if (node->newline())
+  if (node->newline()){
+    _externalFunctions.insert("println");
     _pf.CALL("println"); // print a newline
+  }
 }
 
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_read_node(til::read_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
+  _externalFunctions.insert("readi");
   _pf.CALL("readi");
   _pf.LDFVAL32();
   // node->argument()->accept(this, lvl); // FIXME: commented to compile

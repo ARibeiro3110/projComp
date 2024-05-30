@@ -4,6 +4,8 @@
 #include "targets/basic_ast_visitor.h"
 
 #include <sstream>
+#include <set>
+#include <stack>
 #include <cdk/emitters/basic_postfix_emitter.h>
 
 namespace til {
@@ -15,6 +17,10 @@ namespace til {
     cdk::symbol_table<til::symbol> &_symtab;
     cdk::basic_postfix_emitter &_pf;
     int _lbl;
+    std::string _functionReturnLabel; // Label used to return from the current function
+    std::set<std::string> _externalFunctions;  // External functions to declare
+    std::stack<std::string> _functionLabels;  // Stack used to fetch the current function label
+    int _offset;
 
   public:
     postfix_writer(std::shared_ptr<cdk::compiler> compiler, cdk::symbol_table<til::symbol> &symtab,
