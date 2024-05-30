@@ -429,7 +429,29 @@ void til::type_checker::do_function_node(til::function_node *const node, int lvl
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_return_node(til::return_node *const node, int lvl) {
-  // EMPTY
+  auto symbol = _symtab.find("@", 1);
+  if (symbol == nullptr)
+    throw std::string("return statement outside program");
+
+  std::shared_ptr<cdk::functional_type> function_type = cdk::functional_type::cast(symbol->type());
+  std::shared_ptr<cdk::basic_type> return_type = function_type->output(0);
+
+  if (node->value() == nullptr) { // return statement without expression
+    if (return_type->name() != cdk::TYPE_VOID)
+      throw std::string("no return value but non-void return type");
+    else
+      return; // no returned value and void return type
+  }
+  else { // return statement with expression
+    if (return_type->name() == cdk::TYPE_VOID)
+      throw std::string("void return type but returned value");
+  }
+
+  // non-void return type and returned value
+  node->value()->accept(this, lvl + 2);
+
+  if (!typecmp(return_type, node->value()->type(), true))
+    throw std::string("wrong type of returned expression");
 }
 
 //---------------------------------------------------------------------------
@@ -480,7 +502,26 @@ void til::type_checker::do_null_ptr_node(til::null_ptr_node *const node, int lvl
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_ptr_index_node(til::ptr_index_node *const node, int lvl) {
-  // EMPTY
+  ASSERT_UNSPEC;
+
+  node->base()->accept(this, lvl + 2);
+  if (!node->base()->is_typed(cdk::TYPE_POINTER))
+    throw std::string("expected pointer type in base");
+  
+  node->index()->accept(this, lvl + 2);
+  if (node->index()->is_typed(cdk::TYPE_UNSPEC)) {
+    node->index()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+  } else if (!node->index()->is_typed(cdk::TYPE_INT))
+    throw std::string("expected integer in index");
+  
+  auto base_type = cdk::reference_type::cast(node->base()->type());
+
+  if (base_type->referenced()->name() == cdk::TYPE_UNSPEC) {
+    base_type = cdk::reference_type::create(4, cdk::primitive_type::create(4, cdk::TYPE_INT));
+    node->base()->type(base_type);
+  }
+
+  node->type(base_type->referenced());
 }
 
 //---------------------------------------------------------------------------
