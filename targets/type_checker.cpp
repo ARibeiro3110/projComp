@@ -299,42 +299,41 @@ void til::type_checker::do_variable_node(cdk::variable_node *const node, int lvl
   const std::string &id = node->name();
   std::shared_ptr<til::symbol> symbol = _symtab.find(id);
 
-  if (symbol != nullptr) {
+  if (symbol != nullptr)
     node->type(symbol->type());
-  } else {
-    throw id;
-  }
+  else
+    throw std::string("undeclared variable '" + id + "'");
 }
 
 void til::type_checker::do_rvalue_node(cdk::rvalue_node *const node, int lvl) {
   ASSERT_UNSPEC;
-  try {
-    node->lvalue()->accept(this, lvl);
-    node->type(node->lvalue()->type());
-  } catch (const std::string &id) {
-    throw "undeclared variable '" + id + "'";
-  }
+  node->lvalue()->accept(this, lvl);
+  node->type(node->lvalue()->type());
 }
 
 void til::type_checker::do_assignment_node(cdk::assignment_node *const node, int lvl) {
   ASSERT_UNSPEC;
 
-  try {
-    node->lvalue()->accept(this, lvl);
-  } catch (const std::string &id) {
-    auto symbol = std::make_shared<til::symbol>(cdk::primitive_type::create(4, cdk::TYPE_INT), id, 0);
-    _symtab.insert(id, symbol);
-    _parent->set_new_symbol(symbol);  // advise parent that a symbol has been inserted
-    node->lvalue()->accept(this, lvl);  //DAVID: bah!
+  node->lvalue()->accept(this, lvl);
+  node->rvalue()->accept(this, lvl + 2);
+
+  if (node->rvalue()->is_typed(cdk::TYPE_UNSPEC)) {
+    node->rvalue()->type(node->lvalue()->type());
+  } else if (node->rvalue()->is_typed(cdk::TYPE_POINTER) && node->lvalue()->is_typed(cdk::TYPE_POINTER)) {
+    auto lvalue_ref = cdk::reference_type::cast(node->lvalue()->type());
+    auto rvalue_ref = cdk::reference_type::cast(node->rvalue()->type());
+
+    if ( lvalue_ref->referenced()->name() == cdk::TYPE_VOID
+         || rvalue_ref->referenced()->name() == cdk::TYPE_VOID
+         || rvalue_ref->referenced()->name() == cdk::TYPE_UNSPEC) {
+      node->rvalue()->type(node->lvalue()->type());
+    }
   }
 
-  if (!node->lvalue()->is_typed(cdk::TYPE_INT)) throw std::string("wrong type in left argument of assignment expression");
+  if (!typecmp(node->lvalue()->type(), node->rvalue()->type(), true))
+    throw std::string("wrong type in right value of assignment");
 
-  node->rvalue()->accept(this, lvl + 2);
-  if (!node->rvalue()->is_typed(cdk::TYPE_INT)) throw std::string("wrong type in right argument of assignment expression");
-
-  // in Simple, expressions are always int
-  node->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+  node->type(node->lvalue()->type());
 }
 
 //---------------------------------------------------------------------------
@@ -415,7 +414,10 @@ void til::type_checker::do_if_else_node(til::if_else_node *const node, int lvl) 
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_declaration_node(til::declaration_node *const node, int lvl) {
-  // EMPTY
+  // auto symbol = std::make_shared<til::symbol>(cdk::primitive_type::create(4, cdk::TYPE_INT), id, 0);
+  // _symtab.insert(id, symbol);
+  // _parent->set_new_symbol(symbol);  // advise parent that a symbol has been inserted
+  // node->lvalue()->accept(this, lvl);  //DAVID: bah!
 }
 
 //---------------------------------------------------------------------------
