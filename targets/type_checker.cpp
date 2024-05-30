@@ -472,7 +472,9 @@ void til::type_checker::do_objects_node(til::objects_node *const node, int lvl) 
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_null_ptr_node(til::null_ptr_node *const node, int lvl) {
-  // EMPTY
+  ASSERT_UNSPEC;
+
+  node->type(cdk::reference_type::create(4, cdk::primitive_type::create(0, cdk::TYPE_UNSPEC)));
 }
 
 //---------------------------------------------------------------------------
