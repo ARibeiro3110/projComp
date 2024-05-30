@@ -243,18 +243,26 @@ void til::postfix_writer::do_evaluation_node(til::evaluation_node * const node, 
 
 void til::postfix_writer::do_print_node(til::print_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
-  // node->argument()->accept(this, lvl); // determine the value to print // FIXME: commented to compile
-  // if (node->argument()->is_typed(cdk::TYPE_INT)) {
-  //   _pf.CALL("printi");
-  //   _pf.TRASH(4); // delete the printed value
-  // } else if (node->argument()->is_typed(cdk::TYPE_STRING)) {
-  //   _pf.CALL("prints");
-  //   _pf.TRASH(4); // delete the printed value's address
-  // } else {
-  //   std::cerr << "ERROR: CANNOT HAPPEN!" << std::endl;
-  //   exit(1);
-  // }
-  // _pf.CALL("println"); // print a newline
+
+  for (size_t i = 0; i < node->argument()->size(); i++) {
+    auto expr = dynamic_cast<cdk::expression_node*>(node->argument()->node(i));
+    
+    expr->accept(this, lvl);
+    
+    if (expr->is_typed(cdk::TYPE_INT)) {
+      _pf.CALL("printi");
+      _pf.TRASH(4); // delete the printed value
+    } else if (expr->is_typed(cdk::TYPE_DOUBLE)) {
+      _pf.CALL("printd");
+      _pf.TRASH(8); // delete the printed value
+    } else if (expr->is_typed(cdk::TYPE_STRING)) {
+      _pf.CALL("prints");
+      _pf.TRASH(4); // delete the printed value's address
+    }
+  }
+  
+  if (node->newline())
+    _pf.CALL("println"); // print a newline
 }
 
 //---------------------------------------------------------------------------

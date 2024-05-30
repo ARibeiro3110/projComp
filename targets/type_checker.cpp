@@ -350,7 +350,18 @@ void til::type_checker::do_evaluation_node(til::evaluation_node *const node, int
 }
 
 void til::type_checker::do_print_node(til::print_node *const node, int lvl) {
-  node->argument()->accept(this, lvl + 2);
+  for (size_t i = 0; i < node->argument()->size(); i++) {
+    auto expr = dynamic_cast<cdk::expression_node*>(node->argument()->node(i));
+
+    expr->accept(this, lvl);
+
+    if (expr->is_typed(cdk::TYPE_UNSPEC)) {
+      expr->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+    } else if (!expr->is_typed(cdk::TYPE_INT)
+               && !expr->is_typed(cdk::TYPE_DOUBLE)
+               && !expr->is_typed(cdk::TYPE_STRING))
+      throw std::string("wrong type in argument of print instruction");
+  }
 }
 
 //---------------------------------------------------------------------------
