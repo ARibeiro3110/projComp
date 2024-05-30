@@ -7,9 +7,43 @@
 
 //---------------------------------------------------------------------------
 
-bool til::type_checker::typecmp(std::shared_ptr<cdk::basic_type> left, std::shared_ptr<cdk::basic_type> right, bool covariant) {
-  // TODO: implement
-  return false;
+bool til::type_checker::typecmp(std::shared_ptr<cdk::basic_type> left, std::shared_ptr<cdk::basic_type> right, bool allowCovariance) {
+  if (left->name() == cdk::TYPE_UNSPEC || right->name() == cdk::TYPE_UNSPEC) {
+    return false;
+  }
+
+  else if (left->name() == cdk::TYPE_FUNCTIONAL && right->name() == cdk::TYPE_FUNCTIONAL) {
+    auto left_func = cdk::functional_type::cast(left);
+    auto right_func = cdk::functional_type::cast(right);
+
+    if (left_func->input_length() != right_func->input_length()
+        || left_func->output_length() != right_func->output_length())
+      return false;
+
+    for (size_t i = 0; i < left_func->input_length(); i++)
+      if (!typecmp(right_func->output(i), left_func->output(i), allowCovariance))
+        return false;
+
+    for (size_t i = 0; i < left_func->output_length(); i++)
+      if (!typecmp(left_func->input(i), right_func->input(i), allowCovariance))
+        return false;
+
+    return true;
+  }
+
+  else if (left->name() == cdk::TYPE_POINTER && right->name() == cdk::TYPE_POINTER) {
+    auto left_ref = cdk::reference_type::cast(left);
+    auto right_ref = cdk::reference_type::cast(right);
+
+    return typecmp(left_ref->referenced(), right_ref->referenced(), false);
+  }
+
+  else {
+    return (allowCovariance && left->name() == cdk::TYPE_DOUBLE && right->name() == cdk::TYPE_INT)
+           || (left == right
+               && left->name() != cdk::TYPE_FUNCTIONAL && right->name() != cdk::TYPE_FUNCTIONAL
+               && left->name() != cdk::TYPE_POINTER && right->name() != cdk::TYPE_POINTER);
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -62,9 +96,10 @@ void til::type_checker::processUnaryExpression(cdk::unary_operation_node *const 
 
   node->argument()->accept(this, lvl + 2);
 
-  if (!node->argument()->is_typed(cdk::TYPE_INT)
-      && !(allowDoubles && node->argument()->is_typed(cdk::TYPE_DOUBLE))
-      && !node->argument()->is_typed(cdk::TYPE_UNSPEC))
+  if (node->argument()->is_typed(cdk::TYPE_UNSPEC)) {
+    node->argument()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+  } else if (!node->argument()->is_typed(cdk::TYPE_INT)
+             && !(allowDoubles && node->argument()->is_typed(cdk::TYPE_DOUBLE)))
     throw std::string("wrong type in argument of unary expression");
 
   node->type(node->argument()->type());
