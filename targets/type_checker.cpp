@@ -486,5 +486,19 @@ void til::type_checker::do_ptr_index_node(til::ptr_index_node *const node, int l
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_address_of_node(til::address_of_node *const node, int lvl) {
-  // EMPTY
+  ASSERT_UNSPEC;
+
+  node->lvalue()->accept(this, lvl + 2);
+
+  if (node->lvalue()->is_typed(cdk::TYPE_POINTER)) {
+    auto ref_cast = cdk::reference_type::cast(node->lvalue()->type());
+    // if lvalue is void!, then its address is void! as well
+    if (ref_cast->referenced()->name() == cdk::TYPE_VOID) {
+      node->type(node->lvalue()->type());
+      return;
+    }
+  }
+
+  // else, if lvalue is type!, then its address if type!!
+  node->type(cdk::reference_type::create(4, node->lvalue()->type()));
 }
