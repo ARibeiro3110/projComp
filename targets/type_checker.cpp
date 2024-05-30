@@ -435,7 +435,14 @@ void til::type_checker::do_block_node(til::block_node *const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_sizeof_node(til::sizeof_node *const node, int lvl) {
-  // EMPTY
+  ASSERT_UNSPEC;
+  node->expression()->accept(this, lvl + 2);
+
+  if (node->expression()->is_typed(cdk::TYPE_UNSPEC)) {
+    node->expression()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+  }
+
+  node->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
 }
 
 //---------------------------------------------------------------------------

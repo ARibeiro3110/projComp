@@ -356,7 +356,9 @@ void til::postfix_writer::do_block_node(til::block_node * const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_sizeof_node(til::sizeof_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
+
+  _pf.INT(node->expression()->type()->size());
 }
 
 //---------------------------------------------------------------------------
