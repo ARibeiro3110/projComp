@@ -205,7 +205,7 @@ void til::postfix_writer::do_add_node(cdk::add_node * const node, int lvl) {
   node->right()->accept(this, lvl);
   if (node->right()->is_typed(cdk::TYPE_INT) && node->is_typed(cdk::TYPE_DOUBLE)) {
     _pf.I2D();
-  } else if (node->right()->is_typed(cdk:TYPE_INT) && node->is_typed(cdk::TYPE_POINTER)) {
+  } else if (node->right()->is_typed(cdk::TYPE_INT) && node->is_typed(cdk::TYPE_POINTER)) {
     std::shared_ptr<cdk::reference_type> ref = cdk::reference_type::cast(node->type());
     _pf.INT(std::max(ref->referenced()->size(), static_cast<size_t>(1)));
     _pf.MUL();
