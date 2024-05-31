@@ -535,11 +535,17 @@ void til::postfix_writer::do_null_ptr_node(til::null_ptr_node * const node, int 
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_ptr_index_node(til::ptr_index_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
+  node->base()->accept(this, lvl + 2);
+  node->index()->accept(this, lvl + 2);
+  _pf.INT(node->type()->size());
+  _pf.MUL();
+  _pf.ADD();
 }
 
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_address_of_node(til::address_of_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
+  node->lvalue()->accept(this, lvl + 2);
 }
