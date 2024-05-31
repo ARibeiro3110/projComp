@@ -40,6 +40,9 @@ namespace til {
     int offset(int o) {
       return _offset = o;
     }
+    bool global() const {
+      return _offset == 0;
+    }
   };
 
 } // til

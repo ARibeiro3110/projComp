@@ -3,6 +3,7 @@
 
 #include "targets/basic_ast_visitor.h"
 
+#include <optional>
 #include <sstream>
 #include <set>
 #include <stack>
@@ -24,6 +25,7 @@ namespace til {
     std::set<std::string> _externalFunctions; // External functions to declare
     std::stack<std::string> _functionLabels; // Stack used to fetch the current function label
     int _offset; // Current framepointer offset
+    std::optional<std::string> _externalFunctionName; // External function to be called
     std::vector<std::string> _functionLoopConditionLabels;
     std::vector<std::string> _functionLoopEndLabels;
     bool _controlFlowAltered = false; // Instructions which alter control flow are stop, next and return

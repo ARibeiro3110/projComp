@@ -4,6 +4,7 @@
 #include "targets/postfix_writer.h"
 #include "targets/frame_size_calculator.h"
 #include ".auto/all_nodes.h"  // all_nodes.h is automatically generated
+
 #include "til_parser.tab.h"
 
 //---------------------------------------------------------------------------
@@ -423,32 +424,51 @@ void til::postfix_writer::do_eq_node(cdk::eq_node * const node, int lvl) {
 
 void til::postfix_writer::do_variable_node(cdk::variable_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
-  // simplified generation: all variables are global
-  _pf.ADDR(node->name());
+  
+  auto symbol = _symtab.find(node->name());
+
+  if (symbol->qualifier() == tEXTERNAL) {
+    _externalFunctionName  = symbol->name();
+  } else if (symbol->global()) {
+    _pf.ADDR(node->name());
+  } else {
+    _pf.LOCAL(symbol->offset());
+  }
 }
 
 void til::postfix_writer::do_rvalue_node(cdk::rvalue_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
   node->lvalue()->accept(this, lvl);
-  _pf.LDINT(); // depends on type size
+  
+  if (_externalFunctionName) {
+    return;
+  }
+
+  if (node->is_typed(cdk::TYPE_DOUBLE)) {
+    _pf.LDDOUBLE();
+  } else {
+    _pf.LDINT();
+  }
 }
 
 void til::postfix_writer::do_assignment_node(cdk::assignment_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
-  node->rvalue()->accept(this, lvl); // determine the new value
-  _pf.DUP32();
-  if (new_symbol() == nullptr) {
-    node->lvalue()->accept(this, lvl); // where to store the value
+
+  acceptAndCast(node->type(), node->rvalue(), lvl);
+
+  if (node->is_typed(cdk::TYPE_DOUBLE)) {
+    _pf.DUP64();
   } else {
-    _pf.DATA(); // variables are all global and live in DATA
-    _pf.ALIGN(); // make sure we are aligned
-    _pf.LABEL(new_symbol()->name()); // name variable location
-    reset_new_symbol();
-    _pf.SINT(0); // initialize it to 0 (zero)
-    _pf.TEXT(); // return to the TEXT segment
-    node->lvalue()->accept(this, lvl);  //DAVID: bah!
+    _pf.DUP32();
   }
-  _pf.STINT(); // store the value at address
+
+  node->lvalue()->accept(this, lvl);
+
+  if (node->is_typed(cdk::TYPE_DOUBLE)) {
+    _pf.STDOUBLE();
+  } else {
+    _pf.STINT();
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -501,14 +521,10 @@ void til::postfix_writer::do_program_node(til::program_node * const node, int lv
 
 void til::postfix_writer::do_evaluation_node(til::evaluation_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
-  node->argument()->accept(this, lvl); // determine the value
-  if (node->argument()->is_typed(cdk::TYPE_INT)) {
-    _pf.TRASH(4); // delete the evaluated value
-  } else if (node->argument()->is_typed(cdk::TYPE_STRING)) {
-    _pf.TRASH(4); // delete the evaluated value's address
-  } else {
-    std::cerr << "ERROR: CANNOT HAPPEN!" << std::endl;
-    exit(1);
+
+  node->argument()->accept(this, lvl);
+  if (node->argument()->type()->size() > 0) {
+    _pf.TRASH(node->argument()->type()->size());
   }
 }
 
@@ -523,21 +539,21 @@ void til::postfix_writer::do_print_node(til::print_node * const node, int lvl) {
     if (expr->is_typed(cdk::TYPE_INT)) {
       _externalFunctions.insert("printi");
       _pf.CALL("printi");
-      _pf.TRASH(4); // delete the printed value
+      _pf.TRASH(4);
     } else if (expr->is_typed(cdk::TYPE_DOUBLE)) {
       _externalFunctions.insert("printd");
       _pf.CALL("printd");
-      _pf.TRASH(8); // delete the printed value
+      _pf.TRASH(8);
     } else if (expr->is_typed(cdk::TYPE_STRING)) {
       _externalFunctions.insert("prints");
       _pf.CALL("prints");
-      _pf.TRASH(4); // delete the printed value's address
+      _pf.TRASH(4);
     }
   }
 
   if (node->newline()){
     _externalFunctions.insert("println");
-    _pf.CALL("println"); // print a newline
+    _pf.CALL("println");
   }
 }
 
