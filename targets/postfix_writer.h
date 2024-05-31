@@ -39,7 +39,8 @@ namespace til {
   
   protected:
     void handle_loop_control_instruction(int level, const std::vector<std::string>& labels, 
-                                        const std::string& instructionName);
+                                         const std::string& instructionName);
+    void til::postfix_writer::acceptAndCast(std::shared_ptr<cdk::basic_type> const type, cdk::expression_node *const node, int lvl);
   private:
     /** Method used to generate sequential labels. */
     inline std::string mklbl(int lbl) {

@@ -7,6 +7,46 @@
 
 //---------------------------------------------------------------------------
 
+void til::postfix_writer::acceptAndCast(std::shared_ptr<cdk::basic_type> const type, cdk::expression_node *const node, int lvl) {
+  if (!node->is_typed(cdk::TYPE_FUNCTIONAL)) { // TODO: || target_type->name() != cdk::TYPE_FUNCTIONAL
+    node->accept(this, lvl);
+
+    if (type->name() == cdk::TYPE_DOUBLE && node->is_typed(cdk::TYPE_INT)) {
+      _pf.I2D();
+    }
+
+    return;
+  }
+
+  std::shared_ptr<cdk::functional_type> intended_type = cdk::functional_type::cast(type);
+  std::shared_ptr<cdk::functional_type> node_type = cdk::functional_type::cast(node->type());
+
+  bool neededI2Dconversion = false;
+
+  if (intended_type->output(0)->name() == cdk::TYPE_DOUBLE
+      && node_type->name() == cdk::TYPE_INT) {
+    neededI2Dconversion = true;
+  } else {
+    for (size_t i = 0; i < node_type->input()->size(); i++) {
+      if (intended_type->input(i)->name() == cdk::TYPE_DOUBLE
+          && node_type->input(i)->name() == cdk::TYPE_INT) {
+        neededI2Dconversion = true;
+        break;
+      }
+    }
+  }
+
+  if (!neededI2Dconversion) {
+    node->accept(this, lvl);
+    return;
+  }
+
+  // TODO: Needed conversion from int to double in arguments and/or return
+  throw std::string("TODO: NOT IMPLEMENTED");
+}
+
+//---------------------------------------------------------------------------
+
 void til::postfix_writer::do_nil_node(cdk::nil_node * const node, int lvl) {
   // EMPTY
 }
@@ -385,7 +425,24 @@ void til::postfix_writer::do_function_node(til::function_node * const node, int 
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_return_node(til::return_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
+
+  auto symbol = _symtab.find("@", 1);
+  std::shared_ptr<cdk::basic_type> return_type = cdk::functional_type::cast(symbol->type())->output(0);
+
+  if (return_type->name() != cdk::TYPE_VOID) {
+    acceptAndCast(return_type, node->value(), lvl + 2);
+
+    if (return_type->name() == cdk::TYPE_DOUBLE) {
+      _pf.STFVAL64();
+    } else {
+      _pf.STFVAL32();
+    }
+  }
+
+  _pf.JMP(_functionReturnLabel);
+
+  _controlFlowAltered = true;
 }
 
 //---------------------------------------------------------------------------
