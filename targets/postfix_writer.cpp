@@ -9,7 +9,7 @@
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::acceptAndCast(std::shared_ptr<cdk::basic_type> const type, cdk::expression_node *const node, int lvl) {
-  if (!node->is_typed(cdk::TYPE_FUNCTIONAL)) { // TODO: || target_type->name() != cdk::TYPE_FUNCTIONAL
+  if (!node->is_typed(cdk::TYPE_FUNCTIONAL)) { // TODO: || type->name() != cdk::TYPE_FUNCTIONAL
     node->accept(this, lvl);
 
     if (type->name() == cdk::TYPE_DOUBLE && node->is_typed(cdk::TYPE_INT)) {
@@ -42,8 +42,47 @@ void til::postfix_writer::acceptAndCast(std::shared_ptr<cdk::basic_type> const t
     return;
   }
 
-  // TODO: Needed conversion from int to double in arguments and/or return
-  throw std::string("TODO: NOT IMPLEMENTED");
+  // Needed conversion from int to double in arguments and/or return
+
+  int lineno = node->lineno();
+
+  std::string aux_name = "aux_" + std::to_string(++_lbl);
+  til::declaration_node *aux_decl = new til::declaration_node(lineno, tPRIVATE, node_type, aux_name, nullptr);
+  cdk::variable_node *aux_var = new cdk::variable_node(lineno, aux_name);
+
+  _outsideFunction = true;
+  aux_decl->accept(this, lvl);
+  _outsideFunction = false;
+
+  if (inFunction()) { 
+    _pf.TEXT(_functionLabels.top());
+  } else {
+    _pf.DATA();
+  }
+  _pf.ALIGN();
+
+  cdk::assignment_node *aux_assignment = new cdk::assignment_node(lineno, aux_var, node);
+  aux_assignment->accept(this, lvl);
+  cdk::rvalue_node *aux_rvalue = new cdk::rvalue_node(lineno, aux_var);
+  
+  cdk::sequence_node *arguments = new cdk::sequence_node(lineno);
+  cdk::sequence_node *call_arguments = new cdk::sequence_node(lineno);
+
+  for (size_t i = 0; i < intended_type->input_length(); i++) {
+    std::string argument_name = "_arg" + std::to_string(i);
+    til::declaration_node *argument_declaration = new til::declaration_node(lineno, tPRIVATE, intended_type->input(i), argument_name, nullptr);
+    arguments = new cdk::sequence_node(lineno, argument_declaration, arguments);
+    
+    cdk::rvalue_node *argument_rvalue = new cdk::rvalue_node(lineno, new cdk::variable_node(lineno, argument_name));
+    call_arguments = new cdk::sequence_node(lineno, argument_rvalue, call_arguments);
+  }
+
+  til::function_call_node *call = new til::function_call_node(lineno, aux_rvalue, call_arguments);
+  til::return_node *return_node = new til::return_node(lineno, call);
+  til::block_node *block = new til::block_node(lineno, new cdk::sequence_node(lineno), new cdk::sequence_node(lineno, return_node));
+  til::function_node *aux_function = new til::function_node(lineno, arguments, intended_type->output(0), block);
+
+  aux_function->accept(this, lvl);
 }
 
 //---------------------------------------------------------------------------

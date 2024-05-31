@@ -19,6 +19,7 @@ namespace til {
     cdk::basic_postfix_emitter &_pf;
     int _lbl;
 
+    bool _outsideFunction = false; // make future declarations global
     std::string _functionReturnLabel; // Label used to return from the current function
     std::set<std::string> _externalFunctions; // External functions to declare
     std::stack<std::string> _functionLabels; // Stack used to fetch the current function label
@@ -53,6 +54,10 @@ namespace til {
       else
         oss << "_L" << lbl;
       return oss.str();
+    }
+
+    inline bool inFunction() {
+      return !_outsideFunction && !_functionLabels.empty();
     }
 
   public:
