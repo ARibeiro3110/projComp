@@ -717,7 +717,48 @@ void til::postfix_writer::do_declaration_node(til::declaration_node * const node
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_function_call_node(til::function_call_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
+
+  std::shared_ptr<cdk::functional_type> func_type = 
+    (node->identifier() == nullptr) ? 
+    cdk::functional_type::cast(_symtab.find("@", 1)->type()) : 
+    cdk::functional_type::cast(node->identifier()->type());
+
+  int args_size = 0;
+
+  // arguments are pushed right-to-left
+  for (size_t i = node->arguments()->size(); i > 0; i--) {
+    cdk::expression_node *arg = dynamic_cast<cdk::expression_node*>(node->arguments()->node(i - 1));
+    acceptAndCast(func_type->input(i - 1), arg, lvl + 2);
+    args_size += func_type->input(i - 1)->size();
+  }
+
+  _externalFunctionName = std::nullopt;
+  if (node->identifier() == nullptr) {
+    _pf.ADDR(_functionLabels.top());
+  } else {
+    node->identifier()->accept(this, lvl);
+  }
+
+    // Generate call instruction
+  if (_externalFunctionName) {
+    _pf.CALL(*_externalFunctionName);
+    _externalFunctionName = std::nullopt;
+  } else {
+    _pf.BRANCH();
+  }
+
+  // Clean up arguments from stack
+  if (args_size > 0) {
+    _pf.TRASH(args_size);
+  }
+
+  // Load the function's return value
+  if (node->is_typed(cdk::TYPE_DOUBLE)) {
+    _pf.LDFVAL64();
+  } else if (!node->is_typed(cdk::TYPE_VOID)) {
+    _pf.LDFVAL32();
+  }
 }
 
 //---------------------------------------------------------------------------
