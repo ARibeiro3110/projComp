@@ -525,7 +525,11 @@ void til::type_checker::do_return_node(til::return_node *const node, int lvl) {
   // non-void return type and returned value
   node->value()->accept(this, lvl + 2);
 
-  if (!typecmp(return_type, node->value()->type(), true))
+  if (return_type->name() == cdk::TYPE_INT && return_type->size() == 1
+      && node->value()->type()->name() == cdk::TYPE_INT) {
+    // This is the return statement of the program
+    node->value()->type(return_type);
+  } else if (!typecmp(return_type, node->value()->type(), true))
     throw std::string("wrong type of returned expression");
 }
 

@@ -14,7 +14,7 @@ namespace til {
   public:
     program_node(int lineno, til::block_node *statements) :
         cdk::expression_node(lineno), _statements(statements) {
-      this->type(cdk::functional_type::create(cdk::primitive_type::create(4, cdk::TYPE_INT)));
+      this->type(cdk::functional_type::create(cdk::primitive_type::create(1, cdk::TYPE_INT)));
     }
 
     til::block_node *statements() {
