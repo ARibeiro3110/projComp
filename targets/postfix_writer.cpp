@@ -495,6 +495,12 @@ void til::postfix_writer::do_program_node(til::program_node * const node, int lv
   std::string _oldFunctionReturnLabel = _functionReturnLabel;
   _functionReturnLabel = mklbl(++_lbl);
 
+  std::vector<std::string> oldFunctionLoopConditionLabels = _functionLoopConditionLabels;
+  std::vector<std::string> oldFunctionLoopEndLabels = _functionLoopEndLabels;
+
+  _functionLoopConditionLabels.clear();
+  _functionLoopEndLabels.clear();
+
   _offset = 0;
 
   node->statements()->accept(this, lvl);
@@ -507,9 +513,11 @@ void til::postfix_writer::do_program_node(til::program_node * const node, int lv
   _pf.LEAVE();
   _pf.RET();
 
-  _functionReturnLabel = _oldFunctionReturnLabel;
   _offset = oldOffset;
   _symtab.pop();
+  _functionLoopConditionLabels = oldFunctionLoopConditionLabels;
+  _functionLoopEndLabels = oldFunctionLoopEndLabels;
+  _functionReturnLabel = _oldFunctionReturnLabel;
   _functionLabels.pop();
 
   for (std::string s : _externalFunctions) {
@@ -589,7 +597,7 @@ void til::postfix_writer::do_loop_node(til::loop_node * const node, int lvl) {
   _pf.LABEL(mklbl(condition_lbl));
   node->condition()->accept(this, lvl);
   _pf.JZ(mklbl(end_lbl));
-  
+
   node->block()->accept(this, lvl + 2);
 
   _pf.JMP(mklbl(condition_lbl));
@@ -715,10 +723,62 @@ void til::postfix_writer::do_function_call_node(til::function_call_node * const 
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_function_node(til::function_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
 
+  std::string newfunctionLabel = mklbl(++_lbl);
+  _functionLabels.push(newfunctionLabel);
 
-  // TODO: use _inFunctionBody here
+  _pf.TEXT();
+  _pf.ALIGN();
+  _pf.LABEL(_functionLabels.top());
+
+  int oldOffset = _offset;
+  _offset = 8;  // space for frame pointer and return address
+  _symtab.push(); // enter a new scope
+
+  _inFunctionArgs = true;
+  node->arguments()->accept(this, lvl);
+  _inFunctionArgs = false;
+
+  frame_size_calculator lsc(_compiler, _symtab);
+  node->block()->accept(&lsc, lvl);
+  _pf.ENTER(lsc.localsize());
+
+  std::string _oldFunctionReturnLabel = _functionReturnLabel;
+  _functionReturnLabel = mklbl(++_lbl);
+
+  std::vector<std::string> oldFunctionLoopConditionLabels = _functionLoopConditionLabels;
+  std::vector<std::string> oldFunctionLoopEndLabels = _functionLoopEndLabels;
+
+  _functionLoopConditionLabels.clear();
+  _functionLoopEndLabels.clear();
+
+  _offset = 0;
+
+  node->block()->accept(this, lvl);
+
+  _pf.ALIGN();
+  _pf.LABEL(_functionReturnLabel);
+  _pf.LEAVE();
+  _pf.RET();
+
+  _functionReturnLabel = _oldFunctionReturnLabel;
+
+  _offset = oldOffset;
+  _functionLoopConditionLabels = oldFunctionLoopConditionLabels;
+  _functionLoopEndLabels = oldFunctionLoopEndLabels;
+  _functionLabels.pop();
+  _symtab.pop();
+  
+  if (_inFunctionBody){
+    _pf.TEXT(_functionLabels.top());
+    _pf.ADDR(newfunctionLabel);
+    return;
+  }
+
+  _pf.DATA();
+  _pf.SADDR(newfunctionLabel);
+
 }
 
 //---------------------------------------------------------------------------
