@@ -192,9 +192,30 @@ void til::postfix_writer::do_unary_plus_node(cdk::unary_plus_node * const node, 
 
 void til::postfix_writer::do_add_node(cdk::add_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
+  
   node->left()->accept(this, lvl);
+  if (node->left()->is_typed(cdk::TYPE_INT) && node->is_typed(cdk::TYPE_DOUBLE)) {
+    _pf.I2D();
+  } else if (node->left()->is_typed(cdk::TYPE_INT) && node->is_typed(cdk::TYPE_POINTER)) {
+    std::shared_ptr<cdk::reference_type> ref = cdk::reference_type::cast(node->type());
+    _pf.INT(std::max(ref->referenced()->size(), static_cast<size_t>(1)));
+    _pf.MUL();
+  }
+
   node->right()->accept(this, lvl);
-  _pf.ADD();
+  if (node->right()->is_typed(cdk::TYPE_INT) && node->is_typed(cdk::TYPE_DOUBLE)) {
+    _pf.I2D();
+  } else if (node->right()->is_typed(cdk:TYPE_INT) && node->is_typed(cdk::TYPE_POINTER)) {
+    std::shared_ptr<cdk::reference_type> ref = cdk::reference_type::cast(node->type());
+    _pf.INT(std::max(ref->referenced()->size(), static_cast<size_t>(1)));
+    _pf.MUL();
+  }
+
+  if (node->is_typed(cdk::TYPE_DOUBLE)) {
+    _pf.DADD();
+  } else {
+    _pf.ADD();
+  }
 }
 
 void til::postfix_writer::do_sub_node(cdk::sub_node * const node, int lvl) {
