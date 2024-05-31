@@ -21,6 +21,9 @@ namespace til {
     std::set<std::string> _externalFunctions;  // External functions to declare
     std::stack<std::string> _functionLabels;  // Stack used to fetch the current function label
     int _offset;
+    std::vector<std::string> _functionLoopConditionLabels;
+    std::vector<std::string> _functionLoopEndLabels;
+    bool _controlFlowAltered = false;  // Instructions which alter control flow are stop, next and return
 
   public:
     postfix_writer(std::shared_ptr<cdk::compiler> compiler, cdk::symbol_table<til::symbol> &symtab,
@@ -32,7 +35,10 @@ namespace til {
     ~postfix_writer() {
       os().flush();
     }
-
+  
+  protected:
+    void handle_loop_control_instruction(int level, const std::vector<std::string>& labels, 
+                                        const std::string& instructionName);
   private:
     /** Method used to generate sequential labels. */
     inline std::string mklbl(int lbl) {
