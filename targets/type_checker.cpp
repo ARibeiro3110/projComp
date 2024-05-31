@@ -487,17 +487,69 @@ void til::type_checker::do_declaration_node(til::declaration_node *const node, i
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_function_call_node(til::function_call_node *const node, int lvl) {
-  // EMPTY
+  ASSERT_UNSPEC;
+
+  std::shared_ptr<cdk::functional_type> func_type;
+
+  if (node->identifier() == nullptr) { // "@"
+    auto symbol = _symtab.find("@", 1);
+    if (symbol == nullptr) {
+      throw std::string("recursive call outside function");
+    } else if (symbol->type()->name() == cdk::TYPE_INT && symbol->type()->size() == 1) {
+      throw std::string("recursive call in program");
+    }
+
+    func_type = cdk::functional_type::cast(symbol->type());
+  }
+  else {
+    node->identifier()->accept(this, lvl);
+
+    if (!node->identifier()->is_typed(cdk::TYPE_FUNCTIONAL))
+      throw std::string("non-functional type in identifier");
+    
+    func_type = cdk::functional_type::cast(node->identifier()->type());
+  }
+
+  if (node->arguments()->size() != func_type->input()->length())
+    throw std::string("different number of arguments");
+  
+  for (size_t i = 0; i < func_type->input()->length(); i++) {
+    auto argument = dynamic_cast<cdk::expression_node*>(node->arguments()->node(i));
+    auto input_type = func_type->input(i);
+    argument->accept(this, lvl);
+
+    if (argument->is_typed(cdk::TYPE_UNSPEC)) {
+      if (input_type->name() == cdk::TYPE_DOUBLE) {
+        argument->type(cdk::primitive_type::create(8, cdk::TYPE_DOUBLE));
+      } else {
+        argument->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+      }
+    }
+    else if (argument->is_typed(cdk::TYPE_POINTER) && input_type->name() == cdk::TYPE_POINTER) {
+      std::shared_ptr<cdk::reference_type> argument_ref = cdk::reference_type::cast(argument->type());
+      std::shared_ptr<cdk::reference_type> input_type_ref = cdk::reference_type::cast(input_type);
+
+      if (input_type_ref->referenced()->name() == cdk::TYPE_VOID
+          || argument_ref->referenced()->name() == cdk::TYPE_VOID
+          || argument_ref->referenced()->name() == cdk::TYPE_UNSPEC) {
+        argument->type(input_type);
+      }
+    }
+
+    if (!typecmp(input_type, argument->type(), true))
+      throw std::string("wrong type in argument of function call");
+  }
+
+  node->type(func_type->output(0));
 }
 
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_function_node(til::function_node *const node, int lvl) {
-    auto symbol = std::make_shared<til::symbol>(node->type(), "@", 0);
+  auto symbol = std::make_shared<til::symbol>(node->type(), "@", 0);
 
   if (!_symtab.insert(symbol->name(), symbol)) {
     _symtab.replace(symbol->name(), symbol);
-
   }
 }
 
