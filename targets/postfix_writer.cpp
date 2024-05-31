@@ -556,14 +556,31 @@ void til::postfix_writer::do_read_node(til::read_node * const node, int lvl) {
 
 void til::postfix_writer::do_loop_node(til::loop_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
-  int lbl1, lbl2;
-  _pf.LABEL(mklbl(lbl1 = ++_lbl));
+  
+  int condition_lbl, end_lbl;
+
+  condition_lbl = ++_lbl;
+  end_lbl = ++_lbl;
+  _functionLoopConditionLabels.push_back(mklbl(condition_lbl));
+  _functionLoopEndLabels.push_back(mklbl(end_lbl));
+
+  _pf.ALIGN();
+  _pf.LABEL(mklbl(condition_lbl));
   node->condition()->accept(this, lvl);
-  _pf.JZ(mklbl(lbl2 = ++_lbl));
+  _pf.JZ(mklbl(end_lbl));
+  
   node->block()->accept(this, lvl + 2);
-  _pf.JMP(mklbl(lbl1));
-  _pf.LABEL(mklbl(lbl2));
+
+  _pf.JMP(mklbl(condition_lbl));
+  _pf.ALIGN();
+  _pf.LABEL(mklbl(end_lbl));
+
+  _functionLoopConditionLabels.pop_back();
+  _functionLoopEndLabels.pop_back();
+
+  _controlFlowAltered = false;
 }
+
 
 //---------------------------------------------------------------------------
 
