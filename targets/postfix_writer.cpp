@@ -421,7 +421,22 @@ void til::postfix_writer::do_stop_node(til::stop_node * const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_block_node(til::block_node * const node, int lvl) {
-  // EMPTY
+  _symtab.push();
+
+  node->declarations()->accept(this, lvl + 2);
+
+  _controlFlowAltered = false;
+  for (size_t i = 0; i < node->instructions()->size(); i++) {
+    auto instr = node->instructions()->node(i);
+
+    if (_controlFlowAltered)
+      throw std::string("found instructions after a final instruction");
+    
+    instr->accept(this, lvl + 2);
+  }
+  _controlFlowAltered = false;
+
+  _symtab.pop();
 }
 
 //---------------------------------------------------------------------------

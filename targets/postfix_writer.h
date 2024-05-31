@@ -17,13 +17,14 @@ namespace til {
     cdk::symbol_table<til::symbol> &_symtab;
     cdk::basic_postfix_emitter &_pf;
     int _lbl;
+
     std::string _functionReturnLabel; // Label used to return from the current function
-    std::set<std::string> _externalFunctions;  // External functions to declare
-    std::stack<std::string> _functionLabels;  // Stack used to fetch the current function label
-    int _offset;
+    std::set<std::string> _externalFunctions; // External functions to declare
+    std::stack<std::string> _functionLabels; // Stack used to fetch the current function label
+    int _offset; // Current framepointer offset
     std::vector<std::string> _functionLoopConditionLabels;
     std::vector<std::string> _functionLoopEndLabels;
-    bool _controlFlowAltered = false;  // Instructions which alter control flow are stop, next and return
+    bool _controlFlowAltered = false; // Instructions which alter control flow are stop, next and return
 
   public:
     postfix_writer(std::shared_ptr<cdk::compiler> compiler, cdk::symbol_table<til::symbol> &symtab,
