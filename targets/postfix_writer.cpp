@@ -4,6 +4,7 @@
 #include "targets/postfix_writer.h"
 #include "targets/frame_size_calculator.h"
 #include ".auto/all_nodes.h"  // all_nodes.h is automatically generated
+#include "til_parser.tab.h"
 
 //---------------------------------------------------------------------------
 
@@ -407,7 +408,75 @@ void til::postfix_writer::do_if_else_node(til::if_else_node * const node, int lv
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_declaration_node(til::declaration_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
+
+  int offset = 0;
+  int typesize = node->type()->size();
+  if (_inFunctionArgs) {
+    offset = _offset;
+    _offset += typesize;
+  } else if (_inFunctionBody) {
+    _offset -= typesize;
+    offset = _offset;
+  } else {
+    offset = 0;
+  }
+  std::shared_ptr<til::symbol> symbol = new_symbol();
+  if (symbol) {
+    symbol->offset(offset);
+    reset_new_symbol();
+  }
+
+  if (_inFunctionBody) {
+    if (!(_inFunctionArgs || node->initialValue() == nullptr)) {
+      acceptAndCast(node->type(), node->initialValue(), lvl);
+      if (node->type()->name() == cdk::TYPE_INT) {
+        _pf.LOCAL(symbol->offset());
+        _pf.STINT();
+      } else if (node->type()->name() == cdk::TYPE_DOUBLE) {
+        _pf.LOCAL(symbol->offset());
+        _pf.STDOUBLE();
+      } else {
+        std::cerr << "ERROR: unknown type in declaration" << std::endl;
+        exit(1);
+      }
+      return;
+    }
+  }
+
+  if (symbol->qualifier() == tEXTERNAL || symbol->qualifier() == tFORWARD) {
+    _externalFunctions.insert(symbol->name());
+  } else {
+    _externalFunctions.erase(symbol->name());
+
+    if (node->initialValue() == nullptr) {
+      _pf.BSS();
+      _pf.ALIGN();
+
+      if (symbol->qualifier() == tPUBLIC) {
+        _pf.GLOBAL(symbol->name(), _pf.OBJ());
+      }
+
+      _pf.LABEL(symbol->name());
+      _pf.SALLOC(typesize);
+    } else {
+      _pf.DATA();
+      _pf.ALIGN();
+
+      if (symbol->qualifier() == tPUBLIC) {
+        _pf.GLOBAL(symbol->name(), _pf.OBJ());
+      }
+
+      _pf.LABEL(symbol->name());
+
+      if (node->is_typed(cdk::TYPE_DOUBLE) && node->initialValue()->is_typed(cdk::TYPE_INT)) {
+        auto int_node = dynamic_cast<cdk::integer_node*>(node->initialValue());
+        _pf.SDOUBLE(int_node->value());
+      } else {
+        node->initialValue()->accept(this, lvl);
+      }
+    }
+  }
 }
 
 //---------------------------------------------------------------------------

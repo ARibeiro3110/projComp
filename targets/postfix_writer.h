@@ -7,6 +7,7 @@
 #include <set>
 #include <stack>
 #include <cdk/emitters/basic_postfix_emitter.h>
+#include <cdk/types/types.h>
 
 namespace til {
 
@@ -25,7 +26,8 @@ namespace til {
     std::vector<std::string> _functionLoopConditionLabels;
     std::vector<std::string> _functionLoopEndLabels;
     bool _controlFlowAltered = false; // Instructions which alter control flow are stop, next and return
-    bool _inFunctionBody = false; // Used to check if we are in a function body
+    bool _inFunctionBody = false; // Used to check if we are in a function's body
+    bool _inFunctionArgs = false; // Used to check if we are in a function's arguments
 
   public:
     postfix_writer(std::shared_ptr<cdk::compiler> compiler, cdk::symbol_table<til::symbol> &symtab,
