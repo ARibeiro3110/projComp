@@ -23,7 +23,9 @@ void til::frame_size_calculator::do_or_node(cdk::or_node * const node, int lvl) 
 //---------------------------------------------------------------------------
 
 void til::frame_size_calculator::do_sequence_node(cdk::sequence_node * const node, int lvl) {
-  // EMPTY
+  for (size_t i = 0; i < node->size(); i++) {
+    node->node(i)->accept(this, lvl);
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -126,23 +128,25 @@ void til::frame_size_calculator::do_read_node(til::read_node * const node, int l
 //---------------------------------------------------------------------------
 
 void til::frame_size_calculator::do_loop_node(til::loop_node * const node, int lvl) {
-  // EMPTY
+  node->block()->accept(this, lvl);
 }
 
 //---------------------------------------------------------------------------
 
 void til::frame_size_calculator::do_if_node(til::if_node * const node, int lvl) {
-  // EMPTY
+  node->block()->accept(this, lvl);
 }
 
 void til::frame_size_calculator::do_if_else_node(til::if_else_node * const node, int lvl) {
-  // EMPTY
+  node->thenblock()->accept(this, lvl);
+  node->elseblock()->accept(this, lvl);
 }
 
 //---------------------------------------------------------------------------
 
 void til::frame_size_calculator::do_declaration_node(til::declaration_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
+  _localsize += node->type()->size();
 }
 
 //---------------------------------------------------------------------------
@@ -178,7 +182,10 @@ void til::frame_size_calculator::do_stop_node(til::stop_node * const node, int l
 //---------------------------------------------------------------------------
 
 void til::frame_size_calculator::do_block_node(til::block_node * const node, int lvl) {
-  // EMPTY
+  _symtab.push();
+  node->declarations()->accept(this, lvl);
+  node->instructions()->accept(this, lvl);
+  _symtab.pop();
 }
 
 //---------------------------------------------------------------------------
