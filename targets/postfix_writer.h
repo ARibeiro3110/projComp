@@ -36,9 +36,9 @@ namespace til {
     ~postfix_writer() {
       os().flush();
     }
-  
+
   protected:
-    void handle_loop_control_instruction(int level, const std::vector<std::string>& labels, 
+    void handle_loop_control_instruction(int level, const std::vector<std::string>& labels,
                                          const std::string& instructionName);
     void acceptAndCast(std::shared_ptr<cdk::basic_type> const type, cdk::expression_node *const node, int lvl);
   private:

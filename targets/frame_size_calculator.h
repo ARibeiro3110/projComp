@@ -10,7 +10,7 @@ namespace til {
     size_t _localsize;
 
   public:
-    frame_size_calculator(std::shared_ptr<cdk::compiler> compiler, 
+    frame_size_calculator(std::shared_ptr<cdk::compiler> compiler,
       cdk::symbol_table<til::symbol> &symtab) :
         basic_ast_visitor(compiler), _symtab(symtab), _localsize(0) {
     }

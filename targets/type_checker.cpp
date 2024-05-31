@@ -340,7 +340,7 @@ void til::type_checker::do_assignment_node(cdk::assignment_node *const node, int
 
 void til::type_checker::do_program_node(til::program_node *const node, int lvl) {
   auto symbol = std::make_shared<til::symbol>(node->type(), "@", 0);
-  
+
   if (!_symtab.insert(symbol->name(), symbol)) {
     _symtab.replace(symbol->name(), symbol);
   }
@@ -513,13 +513,13 @@ void til::type_checker::do_ptr_index_node(til::ptr_index_node *const node, int l
   node->base()->accept(this, lvl + 2);
   if (!node->base()->is_typed(cdk::TYPE_POINTER))
     throw std::string("expected pointer type in base");
-  
+
   node->index()->accept(this, lvl + 2);
   if (node->index()->is_typed(cdk::TYPE_UNSPEC)) {
     node->index()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
   } else if (!node->index()->is_typed(cdk::TYPE_INT))
     throw std::string("expected integer in index");
-  
+
   auto base_type = cdk::reference_type::cast(node->base()->type());
 
   if (base_type->referenced()->name() == cdk::TYPE_UNSPEC) {
