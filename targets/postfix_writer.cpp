@@ -644,73 +644,77 @@ void til::postfix_writer::do_if_else_node(til::if_else_node * const node, int lv
 
 void til::postfix_writer::do_declaration_node(til::declaration_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
+  auto symbol = new_symbol();
+  reset_new_symbol();
 
   int offset = 0;
-  int typesize = node->type()->size();
+  int typesize = node->type()->size(); // in bytes
   if (_inFunctionArgs) {
     offset = _offset;
     _offset += typesize;
-  } else if (_inFunctionBody) {
+  } else if (inFunction()) {
     _offset -= typesize;
     offset = _offset;
   } else {
+    // global variable
     offset = 0;
   }
-  std::shared_ptr<til::symbol> symbol = new_symbol();
-  if (symbol) {
-    symbol->offset(offset);
-    reset_new_symbol();
-  }
+  symbol->offset(offset);
 
-  if (_inFunctionBody) {
-    if (!(_inFunctionArgs || node->initialValue() == nullptr)) {
-      acceptAndCast(node->type(), node->initialValue(), lvl);
-      if (node->type()->name() == cdk::TYPE_INT) {
-        _pf.LOCAL(symbol->offset());
-        _pf.STINT();
-      } else if (node->type()->name() == cdk::TYPE_DOUBLE) {
-        _pf.LOCAL(symbol->offset());
-        _pf.STDOUBLE();
-      } else {
-        std::cerr << "ERROR: unknown type in declaration" << std::endl;
-        exit(1);
-      }
+  // function local variables have to be handled separately
+  if (inFunction()) {
+    // nothing to do for function args or local variables without initializer
+    if (_inFunctionArgs || node->initialValue() == nullptr) {
       return;
     }
+
+    acceptAndCast(node->type(), node->initialValue(), lvl);
+    if (node->is_typed(cdk::TYPE_DOUBLE)) {
+      _pf.LOCAL(symbol->offset());
+      _pf.STDOUBLE();
+    } else {
+      _pf.LOCAL(symbol->offset());
+      _pf.STINT();
+    }
+
+    return;
   }
 
-  if (symbol->qualifier() == tEXTERNAL || symbol->qualifier() == tFORWARD) {
+  if (symbol->qualifier() == tFORWARD || symbol->qualifier() == tEXTERNAL) {
     _externalFunctions.insert(symbol->name());
-  } else {
-    _externalFunctions.erase(symbol->name());
+    return;
+  }
 
-    if (node->initialValue() == nullptr) {
-      _pf.BSS();
-      _pf.ALIGN();
+  _externalFunctions.erase(symbol->name());
 
-      if (symbol->qualifier() == tPUBLIC) {
-        _pf.GLOBAL(symbol->name(), _pf.OBJ());
-      }
+  if (node->initialValue() == nullptr) {
+    _pf.BSS();
+    _pf.ALIGN();
 
-      _pf.LABEL(symbol->name());
-      _pf.SALLOC(typesize);
-    } else {
-      _pf.DATA();
-      _pf.ALIGN();
-
-      if (symbol->qualifier() == tPUBLIC) {
-        _pf.GLOBAL(symbol->name(), _pf.OBJ());
-      }
-
-      _pf.LABEL(symbol->name());
-
-      if (node->is_typed(cdk::TYPE_DOUBLE) && node->initialValue()->is_typed(cdk::TYPE_INT)) {
-        auto int_node = dynamic_cast<cdk::integer_node*>(node->initialValue());
-        _pf.SDOUBLE(int_node->value());
-      } else {
-        node->initialValue()->accept(this, lvl);
-      }
+    if (symbol->qualifier() == tPUBLIC) {
+      _pf.GLOBAL(symbol->name(), _pf.OBJ());
     }
+
+    _pf.LABEL(symbol->name());
+    _pf.SALLOC(typesize);
+    return;
+  }
+
+  _pf.DATA();
+  _pf.ALIGN();
+
+  if (symbol->qualifier() == tPUBLIC) {
+    _pf.GLOBAL(symbol->name(), _pf.OBJ());
+  }
+
+  _pf.LABEL(symbol->name());
+
+  if (node->is_typed(cdk::TYPE_DOUBLE) && node->initialValue()->is_typed(cdk::TYPE_INT)) {
+
+    auto int_node = dynamic_cast<cdk::integer_node*>(node->initialValue());
+    _pf.SDOUBLE(int_node->value());
+  } else {
+    node->initialValue()->accept(this, lvl);
   }
 }
 
