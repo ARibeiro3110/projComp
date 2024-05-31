@@ -3,6 +3,8 @@
 #include ".auto/all_nodes.h"  // automatically generated
 #include <cdk/types/primitive_type.h>
 
+#include "til_parser.tab.h"
+
 #define ASSERT_UNSPEC { if (node->type() != nullptr && !node->is_typed(cdk::TYPE_UNSPEC)) return; }
 
 //---------------------------------------------------------------------------
@@ -323,9 +325,9 @@ void til::type_checker::do_assignment_node(cdk::assignment_node *const node, int
     auto lvalue_ref = cdk::reference_type::cast(node->lvalue()->type());
     auto rvalue_ref = cdk::reference_type::cast(node->rvalue()->type());
 
-    if ( lvalue_ref->referenced()->name() == cdk::TYPE_VOID
-         || rvalue_ref->referenced()->name() == cdk::TYPE_VOID
-         || rvalue_ref->referenced()->name() == cdk::TYPE_UNSPEC) {
+    if (lvalue_ref->referenced()->name() == cdk::TYPE_VOID
+        || rvalue_ref->referenced()->name() == cdk::TYPE_VOID
+        || rvalue_ref->referenced()->name() == cdk::TYPE_UNSPEC) {
       node->rvalue()->type(node->lvalue()->type());
     }
   }
@@ -349,7 +351,16 @@ void til::type_checker::do_program_node(til::program_node *const node, int lvl) 
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_evaluation_node(til::evaluation_node *const node, int lvl) {
-  node->argument()->accept(this, lvl + 2);
+  node->argument()->accept(this, lvl);
+
+  if (node->argument()->is_typed(cdk::TYPE_UNSPEC)) {
+    node->argument()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+  } else if (node->argument()->is_typed(cdk::TYPE_POINTER)) {
+    auto arg_ref = cdk::reference_type::cast(node->argument()->type());
+    if (arg_ref != nullptr && arg_ref->referenced()->name() == cdk::TYPE_UNSPEC) {
+      node->argument()->type(cdk::reference_type::create(4, cdk::primitive_type::create(4, cdk::TYPE_INT)));
+    }
+  }
 }
 
 void til::type_checker::do_print_node(til::print_node *const node, int lvl) {
@@ -370,11 +381,8 @@ void til::type_checker::do_print_node(til::print_node *const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_read_node(til::read_node *const node, int lvl) {
-  try {
-    // node->argument()->accept(this, lvl); // FIXME: commented to compile
-  } catch (const std::string &id) {
-    throw "undeclared variable '" + id + "'";
-  }
+  ASSERT_UNSPEC;
+  node->type(cdk::primitive_type::create(0, cdk::TYPE_UNSPEC));
 }
 
 //---------------------------------------------------------------------------
@@ -414,10 +422,66 @@ void til::type_checker::do_if_else_node(til::if_else_node *const node, int lvl) 
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_declaration_node(til::declaration_node *const node, int lvl) {
-  // auto symbol = std::make_shared<til::symbol>(cdk::primitive_type::create(4, cdk::TYPE_INT), id, 0);
-  // _symtab.insert(id, symbol);
-  // _parent->set_new_symbol(symbol);  // advise parent that a symbol has been inserted
-  // node->lvalue()->accept(this, lvl);  //DAVID: bah!
+  if (node->type() == nullptr) { // var
+    node->initialValue()->accept(this, lvl + 2);
+
+    if (node->initialValue()->is_typed(cdk::TYPE_UNSPEC)) {
+      node->initialValue()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+    } else if (node->initialValue()->is_typed(cdk::TYPE_POINTER)) {
+      std::shared_ptr<cdk::reference_type> init_ref = cdk::reference_type::cast(node->initialValue()->type());
+      if (init_ref->referenced()->name() == cdk::TYPE_UNSPEC) {
+        node->initialValue()->type(cdk::reference_type::create(4, cdk::primitive_type::create(4, cdk::TYPE_INT)));
+      }
+    } else if (node->initialValue()->is_typed(cdk::TYPE_VOID))
+      throw std::string("cannot assign void to variable");
+
+    node->type(node->initialValue()->type());
+  }
+  else { // not var
+    if (node->initialValue() != nullptr) {
+      node->initialValue()->accept(this, lvl + 2);
+
+      if (node->initialValue()->is_typed(cdk::TYPE_UNSPEC)) {
+        if (node->is_typed(cdk::TYPE_DOUBLE)) {
+          node->initialValue()->type(node->type());
+        } else {
+          node->initialValue()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+        }
+      } else if (node->initialValue()->is_typed(cdk::TYPE_POINTER)) {
+        std::shared_ptr<cdk::reference_type> node_ref = cdk::reference_type::cast(node->type());
+        std::shared_ptr<cdk::reference_type> init_ref = cdk::reference_type::cast(node->initialValue()->type());
+
+        if (node_ref->referenced()->name() == cdk::TYPE_VOID
+            || init_ref->referenced()->name() == cdk::TYPE_VOID
+            || init_ref->referenced()->name() == cdk::TYPE_UNSPEC) {
+          node->initialValue()->type(node->type());
+        }
+      }
+
+      if (!typecmp(node->type(), node->initialValue()->type(), true))
+        throw std::string("wrong type in initial value of declaration");
+    }
+  }
+
+  if (node->qualifier() == tEXTERNAL && !node->is_typed(cdk::TYPE_FUNCTIONAL))
+    throw std::string("external declaration of non-function");
+  
+  auto symbol = std::make_shared<til::symbol>(node->type(), node->identifier(), node->qualifier());
+  if (_symtab.insert(node->identifier(), symbol)) {
+    _parent->set_new_symbol(symbol);
+    return;
+  }
+
+  auto previous = _symtab.find(node->identifier());
+  if (previous != nullptr && previous->qualifier() == tFORWARD) {
+    if (typecmp(previous->type(), symbol->type(), false)) {
+      _symtab.replace(node->identifier(), symbol);
+      _parent->set_new_symbol(symbol);
+      return;
+    }
+  }
+  
+  throw std::string("redeclaration of '" + node->identifier() + "'");
 }
 
 //---------------------------------------------------------------------------
