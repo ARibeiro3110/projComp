@@ -344,7 +344,7 @@ void til::type_checker::do_program_node(til::program_node *const node, int lvl) 
   auto symbol = std::make_shared<til::symbol>(node->type(), "@", 0);
 
   if (!_symtab.insert(symbol->name(), symbol)) {
-    throw std::string("function symbol is redeclared");
+    _symtab.replace(symbol->name(), symbol);
   }
 }
 
