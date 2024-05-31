@@ -561,11 +561,16 @@ void til::postfix_writer::do_print_node(til::print_node * const node, int lvl) {
 
 void til::postfix_writer::do_read_node(til::read_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
-  _externalFunctions.insert("readi");
-  _pf.CALL("readi");
-  _pf.LDFVAL32();
-  // node->argument()->accept(this, lvl); // FIXME: commented to compile
-  _pf.STINT();
+
+  if (node->is_typed(cdk::TYPE_DOUBLE)) {
+    _externalFunctionsToDeclare.insert("readd");
+    _pf.CALL("readd");
+    _pf.LDFVAL64();
+  } else {
+    _externalFunctionsToDeclare.insert("readi");
+    _pf.CALL("readi");
+    _pf.LDFVAL32();
+  }
 }
 
 //---------------------------------------------------------------------------
