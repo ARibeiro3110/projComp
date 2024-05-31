@@ -420,6 +420,9 @@ void til::postfix_writer::do_function_call_node(til::function_call_node * const 
 
 void til::postfix_writer::do_function_node(til::function_node * const node, int lvl) {
   // EMPTY
+
+
+  // TODO: use _inFunctionBody here
 }
 
 //---------------------------------------------------------------------------
@@ -507,7 +510,15 @@ void til::postfix_writer::do_sizeof_node(til::sizeof_node * const node, int lvl)
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_objects_node(til::objects_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
+
+  auto referenced = cdk::reference_type::cast(node->type())->referenced();
+  node->argument()->accept(this, lvl);
+
+  _pf.INT(referenced->size());
+  _pf.MUL();
+  _pf.ALLOC();
+  _pf.SP();
 }
 
 //---------------------------------------------------------------------------
@@ -519,7 +530,12 @@ void til::postfix_writer::do_null_ptr_node(til::null_ptr_node * const node, int 
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_ptr_index_node(til::ptr_index_node * const node, int lvl) {
-  // EMPTY
+  ASSERT_SAFE_EXPRESSIONS;
+  if (_inFunctionBody) {
+    _pf.INT(0);
+  } else {
+    _pf.SINT(0);
+  }
 }
 
 //---------------------------------------------------------------------------

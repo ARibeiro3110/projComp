@@ -25,6 +25,7 @@ namespace til {
     std::vector<std::string> _functionLoopConditionLabels;
     std::vector<std::string> _functionLoopEndLabels;
     bool _controlFlowAltered = false; // Instructions which alter control flow are stop, next and return
+    bool _inFunctionBody = false; // Used to check if we are in a function body
 
   public:
     postfix_writer(std::shared_ptr<cdk::compiler> compiler, cdk::symbol_table<til::symbol> &symtab,

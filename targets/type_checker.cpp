@@ -493,7 +493,12 @@ void til::type_checker::do_function_call_node(til::function_call_node *const nod
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_function_node(til::function_node *const node, int lvl) {
-  // EMPTY
+    auto symbol = std::make_shared<til::symbol>(node->type(), "@", 0);
+
+  if (!_symtab.insert(symbol->name(), symbol)) {
+    _symtab.replace(symbol->name(), symbol);
+
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -558,7 +563,16 @@ void til::type_checker::do_sizeof_node(til::sizeof_node *const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_objects_node(til::objects_node *const node, int lvl) {
-  processUnaryExpression(node, lvl, false);
+  ASSERT_UNSPEC;
+
+  node->argument()->accept(this, lvl + 2);
+
+  if(node->argument()->is_typed(cdk::TYPE_UNSPEC))
+    node->argument()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+  else if (!node->argument()->is_typed(cdk::TYPE_INT))
+    throw std::string("wrong type in argument of objects instruction");
+
+  node->type(cdk::reference_type::create(4, cdk::primitive_type::create(0, cdk::TYPE_UNSPEC)));
 }
 
 //---------------------------------------------------------------------------
