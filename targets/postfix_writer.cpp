@@ -563,11 +563,11 @@ void til::postfix_writer::do_read_node(til::read_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
 
   if (node->is_typed(cdk::TYPE_DOUBLE)) {
-    _externalFunctionsToDeclare.insert("readd");
+    _externalFunctions.insert("readd");
     _pf.CALL("readd");
     _pf.LDFVAL64();
   } else {
-    _externalFunctionsToDeclare.insert("readi");
+    _externalFunctions.insert("readi");
     _pf.CALL("readi");
     _pf.LDFVAL32();
   }
