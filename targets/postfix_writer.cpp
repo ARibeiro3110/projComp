@@ -446,7 +446,7 @@ void til::postfix_writer::do_return_node(til::return_node * const node, int lvl)
 }
 
 //---------------------------------------------------------------------------
-void til::postfix_writer::handle_loop_control_instruction(int level, const std::vector<std::string>& labels,
+void til::postfix_writer::handleLoopControlInstruction(int level, const std::vector<std::string>& labels,
                                                           const std::string& instructionName) {
   if (level <= 0) {
     std::cerr << "ERROR: Invalid " << instructionName << " instruction level" << std::endl;
@@ -467,12 +467,12 @@ void til::postfix_writer::handle_loop_control_instruction(int level, const std::
 
 void til::postfix_writer::do_next_node(til::next_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
-  handle_loop_control_instruction(node->level(), _functionLoopConditionLabels, "next");
+  handleLoopControlInstruction(node->level(), _functionLoopConditionLabels, "next");
 }
 
 void til::postfix_writer::do_stop_node(til::stop_node * const node, int lvl) {
   ASSERT_SAFE_EXPRESSIONS;
-  handle_loop_control_instruction(node->level(), _functionLoopEndLabels, "stop");
+  handleLoopControlInstruction(node->level(), _functionLoopEndLabels, "stop");
 }
 
 //---------------------------------------------------------------------------

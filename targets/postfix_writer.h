@@ -38,7 +38,7 @@ namespace til {
     }
 
   protected:
-    void handle_loop_control_instruction(int level, const std::vector<std::string>& labels,
+    void handleLoopControlInstruction(int level, const std::vector<std::string>& labels,
                                          const std::string& instructionName);
     void acceptAndCast(std::shared_ptr<cdk::basic_type> const type, cdk::expression_node *const node, int lvl);
   private:
