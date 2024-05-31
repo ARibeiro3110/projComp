@@ -648,7 +648,7 @@ void til::postfix_writer::do_declaration_node(til::declaration_node * const node
   reset_new_symbol();
 
   int offset = 0;
-  int typesize = node->type()->size(); // in bytes
+  int typesize = node->type()->size();
   if (_inFunctionArgs) {
     offset = _offset;
     _offset += typesize;
@@ -656,14 +656,12 @@ void til::postfix_writer::do_declaration_node(til::declaration_node * const node
     _offset -= typesize;
     offset = _offset;
   } else {
-    // global variable
     offset = 0;
   }
+
   symbol->offset(offset);
 
-  // function local variables have to be handled separately
   if (inFunction()) {
-    // nothing to do for function args or local variables without initializer
     if (_inFunctionArgs || node->initialValue() == nullptr) {
       return;
     }
@@ -710,12 +708,9 @@ void til::postfix_writer::do_declaration_node(til::declaration_node * const node
   _pf.LABEL(symbol->name());
 
   if (node->is_typed(cdk::TYPE_DOUBLE) && node->initialValue()->is_typed(cdk::TYPE_INT)) {
-
     auto int_node = dynamic_cast<cdk::integer_node*>(node->initialValue());
     _pf.SDOUBLE(int_node->value());
-  } else {
-    node->initialValue()->accept(this, lvl);
-  }
+  } else node->initialValue()->accept(this, lvl);
 }
 
 //---------------------------------------------------------------------------
