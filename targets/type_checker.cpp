@@ -399,6 +399,40 @@ void til::type_checker::do_loop_node(til::loop_node *const node, int lvl) {
 
 //---------------------------------------------------------------------------
 
+void til::type_checker::do_apply_node(til::apply_node *const node, int lvl) {
+  node->function()->accept(this, lvl + 4);
+  node->vector()->accept(this, lvl + 4);
+  node->low()->accept(this, lvl + 4);
+  node->high()->accept(this, lvl + 4);
+
+  if (!node->function()->is_typed(cdk::TYPE_FUNCTIONAL))
+    throw std::string("wrong type in function of apply instruction");
+
+  if (!node->vector()->is_typed(cdk::TYPE_POINTER))
+    throw std::string("wrong type in vector of apply instruction");
+
+  if (node->low()->is_typed(cdk::TYPE_UNSPEC)) {
+    node->low()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+  } else if (!node->low()->is_typed(cdk::TYPE_INT)) {
+    throw std::string("wrong type in low of apply instruction");
+  }
+
+  if (node->high()->is_typed(cdk::TYPE_UNSPEC)) {
+    node->high()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+  } else if (!node->high()->is_typed(cdk::TYPE_INT)) {
+    throw std::string("wrong type in high of apply instruction");
+  }
+
+  auto func_type = cdk::functional_type::cast(node->function()->type());
+  auto vector_type = cdk::reference_type::cast(node->vector()->type());
+
+  if (func_type->input_length() != 1
+      || !type_cmp(func_type->input(0), vector_type->referenced(), true))
+    throw std::string("wrong function arguments");
+}
+
+//---------------------------------------------------------------------------
+
 void til::type_checker::do_if_node(til::if_node *const node, int lvl) {
   node->condition()->accept(this, lvl + 4);
 

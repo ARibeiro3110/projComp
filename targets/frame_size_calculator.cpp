@@ -133,6 +133,13 @@ void til::frame_size_calculator::do_loop_node(til::loop_node * const node, int l
 
 //---------------------------------------------------------------------------
 
+void til::frame_size_calculator::do_apply_node(til::apply_node * const node, int lvl) {
+  ASSERT_SAFE_EXPRESSIONS;
+  _localsize += 4; // sizeof(int)
+}
+
+//---------------------------------------------------------------------------
+
 void til::frame_size_calculator::do_if_node(til::if_node * const node, int lvl) {
   node->block()->accept(this, lvl);
 }

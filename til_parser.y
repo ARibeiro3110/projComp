@@ -40,7 +40,7 @@
 %token <s> tIDENTIFIER tSTRING
 %token tTYPE_INT tTYPE_DOUBLE tTYPE_STRING tTYPE_VOID
 %token tEXTERNAL tFORWARD tPUBLIC tPRIVATE tVAR
-%token tBLOCK tIF tLOOP tSTOP tNEXT tRETURN tPRINT tPRINTLN
+%token tBLOCK tIF tLOOP tAPPLY tSTOP tNEXT tRETURN tPRINT tPRINTLN
 %token tREAD tNULL tINDEX tOBJECTS tSIZEOF tFUNCTION
 %token tLE tGE tEQ tNE tAND tOR tSET
 %token tPROGRAM
@@ -152,6 +152,7 @@ instr : expr                           { $$ = new til::evaluation_node(LINE, $1)
       | '(' tIF   expr instr instr ')' { $$ = new til::if_else_node(LINE, $3, $4, $5); }
       | '(' tIF   expr instr       ')' { $$ = new til::if_node(LINE, $3, $4); }
       | '(' tLOOP expr instr       ')' { $$ = new til::loop_node(LINE, $3, $4); }
+      | '(' tAPPLY expr expr expr expr ')' { $$ = new til::apply_node(LINE, $3, $4, $5, $6); }
       | block                          { $$ = $1; }
       ;
 

@@ -65,6 +65,7 @@ EXP [Ee][+-]?[0-9]+
 "block"                return tBLOCK;
 "if"                   return tIF;
 "loop"                 return tLOOP;
+"apply"                return tAPPLY;
 "stop"                 return tSTOP;
 "next"                 return tNEXT;
 "return"               return tRETURN;

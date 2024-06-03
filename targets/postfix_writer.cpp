@@ -610,6 +610,41 @@ void til::postfix_writer::do_loop_node(til::loop_node * const node, int lvl) {
   _controlFlowAltered = false;
 }
 
+//---------------------------------------------------------------------------
+
+void til::postfix_writer::do_apply_node(til::apply_node * const node, int lvl) {
+  ASSERT_SAFE_EXPRESSIONS;
+
+  auto lineno = node->lineno();
+
+  std::string _iter_name = "_iter_name";
+
+  auto decl = new til::declaration_node(lineno, tPRIVATE, cdk::primitive_type::create(4, cdk::TYPE_INT), _iter_name, node->low());
+  decl->apply(this, lvl + 4);
+
+  auto iter_var = new cdk::variable_node(lineno, _iter_name);
+  auto iter_rvalue = new cdk::rvalue_node(lineno, iter_var);
+  auto condition = new cdk::le_node(lineno, iter_rvalue, node->high());
+
+  auto _element = new til::ptr_index_node(lineno, node->vector(), iter_rvalue);
+  auto element = new cdk::rvalue_node(lineno, _element);
+
+  auto _function_node = til::function_call_node(lineno, node->function(), new cdk::sequence_node(lineno, element));
+  auto function_call = new til::evaluation_node(lineno, _function_node);
+
+  auto add = new cdk::add_node(lineno, iter_rvalue, new cdk::integer_node(lineno, 1));
+
+  auto _increment = new cdk::assignment_node(lineno, iter_rvalue, add);
+  auto increment = new til::evaluation_node(lineno, _increment);
+
+  auto instrs = new cdk::sequence_node(lineno, increment, new cdk::sequence_node(lineno, function_call));
+
+  auto block = new til::block_node(lineno, new cdk::sequence_node(lineno), instrs);
+
+  auto loop = new til::loop_node(lineno, condition, block);
+  loop->accept(this, lvl + 4);
+}
+
 
 //---------------------------------------------------------------------------
 
