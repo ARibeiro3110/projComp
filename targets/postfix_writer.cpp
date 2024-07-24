@@ -479,7 +479,7 @@ void til::postfix_writer::do_program_node(til::program_node * const node, int lv
   _functionLabels.push("_main");
 
   // generate the main function (RTS mandates that its name be "_main")
-  _pf.TEXT();
+  _pf.TEXT("_main");
   _pf.ALIGN();
   _pf.GLOBAL("_main", _pf.FUNC());
   _pf.LABEL("_main");
@@ -768,7 +768,7 @@ void til::postfix_writer::do_function_node(til::function_node * const node, int 
   std::string newfunctionLabel = mklbl(++_lbl);
   _functionLabels.push(newfunctionLabel);
 
-  _pf.TEXT();
+  _pf.TEXT(_functionLabels.top());
   _pf.ALIGN();
   _pf.LABEL(_functionLabels.top());
 
